@@ -62,6 +62,9 @@ let constant ~loc i =
 let constant_s ~loc s =
   let int_lit = Number.(int_literal ILitDec ~neg:false s) in
   mk_expr ~loc (Econst (Constant.ConstInt int_lit))
+let constant_r ~loc r =
+  let real_lit = Number.(real_literal ~radix:10 ~neg:false ~int:r.intpart ~frac:r.fracpart ~exp:r.exppart) in
+  mk_expr ~loc (Econst (Constant.ConstReal real_lit))
 let len ~loc =
   Qident (mk_id ~loc "len")
 
@@ -119,7 +122,7 @@ let rec has_stmt p = function
 and has_stmtl p bl = List.exists (has_stmt p) bl
 
 let rec expr_has_call id e = match e.Py_ast.expr_desc with
-  | Enone | Ebool _ | Eint _ | Estring _ | Py_ast.Eident _ -> false
+  | Enone | Ebool _ | Eint _ | Ereal _ | Estring _ | Py_ast.Eident _ -> false
   | Emake (e1, e2) | Eget (e1, e2) | Ebinop (_, e1, e2) ->
     expr_has_call id e1 || expr_has_call id e2
   | Econd(c,e1,e2) -> expr_has_call id c || expr_has_call id e1 || expr_has_call id e2
@@ -155,6 +158,8 @@ let rec expr env {Py_ast.expr_loc = loc; Py_ast.expr_desc = d } = match d with
     mk_expr ~loc (if b then Etrue else Efalse)
   | Py_ast.Eint s ->
     constant_s ~loc s
+  | Py_ast.Ereal r ->
+    constant_r ~loc r
   | Py_ast.Estring _s ->
     mk_unit ~loc (*FIXME*)
   | Py_ast.Eident id ->

@@ -13,6 +13,12 @@ open Why3
 
 type ident = Ptree.ident
 
+type real = {
+  intpart : string;
+  fracpart : string;
+  exppart : string option;
+}
+
 type unop =
   | Uneg (* -e *)
   | Unot (* not e *)
@@ -35,6 +41,7 @@ and expr_desc =
   | Enone
   | Ebool of bool
   | Eint of string
+  | Ereal of real
   | Estring of string
   | Eident of ident
   | Ebinop of binop * expr * expr

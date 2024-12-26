@@ -69,6 +69,7 @@
 
 let letter = ['a'-'z' 'A'-'Z']
 let digit = ['0'-'9']
+let digitpart = digit ('_'? digit)*
 let ident = (letter | '_')+ (letter | digit | '_')*
 let integer = ['0'-'9']+
 let space = ' ' | '\t'
@@ -122,6 +123,15 @@ rule next_tokens = parse
   | "."     { [DOT] }
   | integer as s
             { [INTEGER s] }
+  | ( (digitpart as i) ("" as f)
+    | (digitpart as i) '.' ("" as f)
+    | ("" as i) '.' (digitpart as f)
+    | (digitpart as i) '.' (digitpart as f) )
+    (['e' 'E'] (['-' '+']? digitpart as e))?
+            { [REAL {
+                intpart=(Why3.Lexlib.remove_underscores i);
+                fracpart=(Why3.Lexlib.remove_underscores f);
+                exppart=(Option.map (fun s -> Why3.Lexlib.remove_leading_plus (Why3.Lexlib.remove_underscores s)) e)}] }
   | '"'     { [STRING (string lexbuf)] }
   | eof     { NEWLINE :: unindent 0 @ [EOF] }
   | _ as c  { raise (Lexing_error ("illegal character: " ^ String.make 1 c)) }

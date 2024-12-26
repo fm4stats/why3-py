@@ -69,6 +69,7 @@
 %}
 
 %token <string> INTEGER
+%token <Py_ast.real> REAL
 %token <string> STRING
 %token <Py_ast.binop> CMP
 %token <string> IDENT QIDENT TVAR
@@ -271,6 +272,8 @@ expr_nt_desc:
     { Ebool false }
 | c = INTEGER
     { Eint c }
+| c = REAL
+    { Ereal c }
 | s = STRING
     { Estring s }
 | e1 = expr_nt LEFTSQ e2 = expr_nt RIGHTSQ
@@ -497,6 +500,7 @@ term_arg_:
 | quote_ident { Tident (Qident $1) }
 | ident       { Tident (Qident $1) }
 | INTEGER     { Tconst (Constant.ConstInt Number.(int_literal ILitDec ~neg:false $1)) }
+| REAL        { Tconst (Constant.ConstReal Number.(real_literal ~radix:10 ~neg:false ~int:$1.intpart ~frac:$1.fracpart ~exp:$1.exppart)) }
 | NONE        { Ttuple [] }
 | TRUE        { Ttrue }
 | FALSE       { Tfalse }
