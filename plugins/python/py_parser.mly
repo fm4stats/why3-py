@@ -80,6 +80,7 @@
        PLUSEQUAL MINUSEQUAL TIMESEQUAL DIVEQUAL MODEQUAL
        LEFTBR RIGHTBR
 %token PLUS MINUS TIMES DIV MOD
+%token PLUSR MINUSR TIMESR DIVR
 (* annotations *)
 %token INVARIANT VARIANT ASSUME ASSERT CHECK REQUIRES ENSURES LABEL
 %token FUNCTION PREDICATE AXIOM LEMMA CONSTANT CALL
@@ -95,8 +96,8 @@
 %right AND
 %nonassoc NOT
 %right CMP
-%left PLUS MINUS
-%left TIMES DIV MOD
+%left PLUS MINUS PLUSR MINUSR
+%left TIMES DIV MOD TIMESR DIVR
 %nonassoc unary_minus prec_prefix_op
 %nonassoc LEFTSQ
 
@@ -323,6 +324,10 @@ expr_nt_desc:
 | MINUS { Bsub }
 | DIV   { Bdiv }
 | MOD   { Bmod }
+| PLUSR  { BaddR }
+| MINUSR  { BsubR }
+| TIMESR  { BmulR }
+| DIVR  { BdivR }
 | c=CMP { c    }
 | AND   { Band }
 | OR    { Bor  }
@@ -545,7 +550,7 @@ term_sub_:
           | Ble  -> "<="
           | Bgt  -> ">"
           | Bge  -> ">="
-          | Badd|Bsub|Bmul|Bdiv|Bmod|Band|Bor -> assert false in
+          | Badd|Bsub|Bmul|Bdiv|Bmod|BaddR|BsubR|BmulR|BdivR|Band|Bor -> assert false in
            mk_id (Ident.op_infix op) $startpos $endpos }
 
 %inline prefix_op:
@@ -557,6 +562,10 @@ term_sub_:
 | PLUS   { mk_id (Ident.op_infix "+") $startpos $endpos }
 | MINUS  { mk_id (Ident.op_infix "-") $startpos $endpos }
 | TIMES  { mk_id (Ident.op_infix "*") $startpos $endpos }
+| PLUSR  { mk_id (Ident.op_infix "+.") $startpos $endpos }
+| MINUSR { mk_id (Ident.op_infix "-.") $startpos $endpos }
+| TIMESR { mk_id (Ident.op_infix "*.") $startpos $endpos }
+| DIVR   { mk_id (Ident.op_infix "/.") $startpos $endpos }
 
 comma_list1(X):
 | separated_nonempty_list(COMMA, X) { $1 }

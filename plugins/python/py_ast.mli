@@ -25,6 +25,7 @@ type unop =
 
 type binop =
   | Badd | Bsub | Bmul | Bdiv | Bmod    (* + - * / % *)
+  | BaddR | BsubR | BmulR | BdivR       (* +. -. *. /. *)
   | Beq | Bneq | Blt | Ble | Bgt | Bge  (* == != < <= > >= *)
   | Band | Bor                          (* && || *)
 

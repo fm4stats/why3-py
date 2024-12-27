@@ -101,6 +101,10 @@ rule next_tokens = parse
   | '*'     { [TIMES] }
   | "//"    { [DIV] }
   | '%'     { [MOD] }
+  | "+."    { [PLUSR] }
+  | "-."    { [MINUSR] }
+  | "*."    { [TIMESR] }
+  | "/."    { [DIVR] }
   | '='     { [EQUAL] }
   | "=="    { [CMP Beq] }
   | "!="    { [CMP Bneq] }

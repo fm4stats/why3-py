@@ -184,6 +184,10 @@ let rec expr env {Py_ast.expr_loc = loc; Py_ast.expr_desc = d } = match d with
       | Py_ast.Bmul -> Eidapp (infix ~loc "*",  [e1; e2])
       | Py_ast.Bdiv -> Eidapp (infix ~loc "//", [e1; e2])
       | Py_ast.Bmod -> Eidapp (infix ~loc "%",  [e1; e2])
+      | Py_ast.BaddR -> Eidapp (infix ~loc "+.",  [e1; e2])
+      | Py_ast.BsubR -> Eidapp (infix ~loc "-.",  [e1; e2])
+      | Py_ast.BmulR -> Eidapp (infix ~loc "*.",  [e1; e2])
+      | Py_ast.BdivR -> Eidapp (infix ~loc "/.",  [e1; e2])
       | Py_ast.Beq  -> Einnfix (e1, id_infix ~loc "=",  e2)
       | Py_ast.Bneq -> Einnfix (e1, id_infix ~loc "<>", e2)
       | Py_ast.Blt  -> Einnfix (e1, id_infix ~loc "<",  e2)
@@ -574,7 +578,7 @@ let read_channel env path file c =
     let decl = Ptree.Duseimport(loc,false,[(qid,None)]) in
     Typing.add_decl loc decl in
   List.iter use_import
-    ["int", "Int"; "ref", "Refint"; "python", "Python"];
+    ["int", "Int"; "ref", "Refint"; "real", "RealInfix"; "python", "Python"];
   translate ~loc f;
   Typing.close_module loc;
   let mm = Typing.close_file () in
