@@ -11,6 +11,7 @@
 
 open Why3
 open Pmodule
+open Py_type
 open Py_ast
 open Ptree
 open Wstdlib
@@ -199,6 +200,10 @@ let rec expr env {Py_ast.expr_loc = loc; Py_ast.expr_desc = d } = match d with
     mk_expr ~loc (Eidapp (prefix ~loc "-", [expr env e]))
   | Py_ast.Eunop (Py_ast.Unot, e) ->
     mk_expr ~loc (Enot (expr env e))
+  | Py_ast.Eunop (Py_ast.Uint, e) ->
+    mk_expr ~loc (Eidapp (Qident (mk_id ~loc "truncate"), [expr env e]))
+  | Py_ast.Eunop (Py_ast.Ufloat, e) ->
+    mk_expr ~loc (Eidapp (Qident (mk_id ~loc "from_int"), [expr env e]))
 
   | Py_ast.Edot (e, f, el) ->
     let el = List.map (expr env) (e::el) in
@@ -578,7 +583,11 @@ let read_channel env path file c =
     let decl = Ptree.Duseimport(loc,false,[(qid,None)]) in
     Typing.add_decl loc decl in
   List.iter use_import
-    ["int", "Int"; "ref", "Refint"; "real", "RealInfix"; "python", "Python"];
+    ["int", "Int"; "ref", "Refint";
+     "real", "RealInfix";
+     "real", "FromInt";
+     "real", "Truncate";
+     "python", "Python"];
   translate ~loc f;
   Typing.close_module loc;
   let mm = Typing.close_file () in
@@ -589,8 +598,152 @@ let read_channel env path file c =
   end;
   mm
 
+let copy_io i o =
+  let bytebuf = Bytes.create 4096 in
+  let rec aux () =
+    let n = input i bytebuf 0 4096 in
+    if n = 0 then
+      ()
+    else begin
+      output o bytebuf 0 n;
+      aux ()
+    end
+  in
+  aux ()
+
+let python_inf_script = {|
+import sys
+import os
+from pathlib import Path
+
+from mypy import build
+from mypy.options import Options
+from mypy.traverser import TraverserVisitor
+from mypy.nodes import OpExpr
+from mypy.types import Type
+
+#print('foo', file=sys.stderr)
+
+def type_of_node(types, node):
+    if node not in types:
+        return '?'
+    ty = types[node]
+    if not hasattr(ty, 'type'):
+        return '?'
+    return ty.type.name
+
+def analyse(filename):
+    options = Options()
+    #options.incremental = False
+    options.preserve_asts = True
+    options.export_types = True
+
+    python_code = Path(filename).read_text()
+    mod, ext = os.path.splitext(os.path.basename(filename))
+
+    result = build.build(sources=[build.BuildSource(filename, mod, python_code)], options=options)
+
+    if result.errors:
+        print("Errors:", result.errors)
+        sys.exit(1)
+
+    if mod not in result.graph:
+        print(f"Error: {mod} module not found in result.graph")
+        sys.exit(1)
+
+    tree = result.graph[mod].tree
+    types = result.types
+
+    class ExpressionTypeExtractor(TraverserVisitor):
+        def visit_op_expr(self, node: OpExpr) -> None:
+            left_type = type_of_node(types, node.left)
+            right_type = type_of_node(types, node.right)
+            result_type = type_of_node(types, node)
+            arg_types = ':'.join([left_type, right_type])
+            row = [
+              str(node.line),
+              str(node.column),
+              str(node.end_line),
+              str(node.end_column),
+              node.op,
+              arg_types,
+              result_type
+            ]
+            print(','.join(row))
+            super().visit_op_expr(node)
+
+    extractor = ExpressionTypeExtractor()
+    tree.accept(extractor)
+
+for fn in sys.argv[1:]:
+    #print(fn, file=sys.stderr)
+    analyse(fn)
+|}
+
+let read_typeinfo i tbl =
+  let rec aux () =
+    try
+      let line = input_line i in
+      (* "4,6,4,20,+,int:int,int" *)
+      let strs = String.split_on_char ',' line in
+      if List.length strs <> 7 then raise (Failure "python type inference result format failure");
+      let line1 = int_of_string (List.nth strs 0) in
+      let col1 = int_of_string (List.nth strs 1) in
+      let line2 = int_of_string (List.nth strs 2) in
+      let col2 = int_of_string (List.nth strs 3) in
+      let op = List.nth strs 4 in
+      let arg_types = String.split_on_char ':' (List.nth strs 5) in
+      let ret_type = List.nth strs 6 in
+      Hashtbl.add tbl (line1, col1, line2, col2) (op, arg_types, ret_type);
+      aux ()
+    with End_of_file -> ()
+  in
+  aux ()
+
+let typeinf_python fn =
+  let typeinf_program_opt =
+    try
+      Some (Sys.getenv "WHY3_PYTHON_TYPE_INFERENCE")
+    with Not_found ->
+      None
+  in
+  let (i, clo) =
+    match typeinf_program_opt with
+    | Some typeinf_program ->
+        let i = Unix.open_process_args_in typeinf_program [|typeinf_program; fn|] in
+        (i, fun () -> Unix.close_process_in i)
+    | None ->
+        let (i, o) = Unix.open_process_args "python3" [|"python3"; "-"; fn|] in
+        output_string o python_inf_script;
+        close_out o;
+        (i, fun () -> Unix.close_process (i, o))
+  in
+  let tbl = Hashtbl.create 0 in
+  read_typeinfo i tbl;
+  let status = clo () in
+  match status with
+  | Unix.WEXITED 0 -> tbl
+  | _ -> raise (Failure "python type inference failure")
+
+let read_channel' env path file c =
+  let tmp_prefix = Option.value ~default:file (Filename.chop_suffix_opt ~suffix:".py" file) ^ "-" in
+  let (tmp_filename, tmp_out) = Filename.open_temp_file tmp_prefix ".py" in
+  let cleanup () = Sys.remove tmp_filename in
+  copy_io c tmp_out;
+  close_out tmp_out;
+  let tbl = typeinf_python tmp_filename in
+  let tmp_in1 = open_in tmp_filename in
+  py_type_tbl := Some tbl;
+  let cleanup () = py_type_tbl := None; close_in tmp_in1; cleanup () in
+  let result =
+    (try read_channel env path file tmp_in1
+    with e -> (cleanup (); raise e))
+  in
+  cleanup ();
+  result
+
 let () =
-  Env.register_format mlw_language "python" ["py"] read_channel
+  Env.register_format mlw_language "python" ["py"] read_channel'
     ~desc:"mini-Python format"
 
 (* Python pretty-printer, to print tasks with a little bit

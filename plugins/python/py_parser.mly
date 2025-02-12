@@ -26,6 +26,35 @@
   let mk_stmt loc d = Dstmt { stmt_desc = d; stmt_loc = loc }
   let mk_var id = mk_expr id.id_loc (Eident id)
 
+  let mk_ebinop loc o e1 e2 =
+    match !Py_type.py_type_tbl with
+    | None -> Ebinop (o, e1, e2)
+    | Some tbl ->
+        let (_fn,l1,c1,l2,c2) = Loc.get loc in
+        let key = (l1,c1,l2,c2) in
+        match Hashtbl.find_opt tbl key with
+        | None -> Ebinop (o, e1, e2)
+        | Some (op, arg_types, ret_type) ->
+            (match o with
+            | Badd -> assert (op = "+")
+            | Bsub -> assert (op = "-")
+            | Bmul -> assert (op = "*")
+            | Bdiv -> assert (op = "//")
+            | BdivR -> assert (op = "/")
+            | _ -> ());
+            let real_op =
+              match o with
+              | Badd -> BaddR
+              | Bsub -> BsubR
+              | Bmul -> BmulR
+              | _ -> o
+            in
+            match arg_types, ret_type with
+            | ["float"; "float"], "float" -> Ebinop (real_op, e1, e2)
+            | ["float"; "int"], "float" -> Ebinop (real_op, e1, mk_expr e2.expr_loc (Eunop (Ufloat, e2)))
+            | ["int"; "float"], "float" -> Ebinop (real_op, mk_expr e1.expr_loc (Eunop (Ufloat, e1)), e2)
+            | _ -> Ebinop (o, e1, e2)
+
   let variant_union v1 v2 = match v1, v2 with
     | _, [] -> v1
     | [], _ -> v2
@@ -180,6 +209,7 @@ typ:
 | id=ident
   { if id.id_str = "list"
     then PTtyapp (Qident id, [fresh_type_var (floc $startpos $endpos)])
+    else if id.id_str = "float" then PTtyapp (Qident { id with id_str="real" }, [])
     else PTtyapp (Qident id, []) }
 | id=ident LEFTSQ tyl=separated_nonempty_list(COMMA, typ) RIGHTSQ
     {
@@ -296,11 +326,11 @@ expr_nt_desc:
 | NOT e1 = expr_nt
     { Eunop (Unot, e1) }
 | e1 = expr_nt o = binop e2 = expr_nt
-    { Ebinop (o, e1, e2) }
+    { mk_ebinop (floc $startpos $endpos) o e1 e2 }
 | e1 = expr_nt TIMES e2 = expr_nt
     { match e1.expr_desc with
       | Elist [e1] -> Emake (e1, e2)
-      | _ -> Ebinop (Bmul, e1, e2) }
+      | _ -> mk_ebinop (floc $startpos $endpos) Bmul e1 e2 }
 | e=expr_dot DOT f=ident LEFTPAR el=separated_list(COMMA, expr_nt) RIGHTPAR
     {
       match f.id_str with

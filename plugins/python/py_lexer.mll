@@ -104,7 +104,7 @@ rule next_tokens = parse
   | "+."    { [PLUSR] }
   | "-."    { [MINUSR] }
   | "*."    { [TIMESR] }
-  | "/."    { [DIVR] }
+  | "/"     { [DIVR] }
   | '='     { [EQUAL] }
   | "=="    { [CMP Beq] }
   | "!="    { [CMP Bneq] }

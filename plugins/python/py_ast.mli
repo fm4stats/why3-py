@@ -22,10 +22,12 @@ type real = {
 type unop =
   | Uneg (* -e *)
   | Unot (* not e *)
+  | Uint (* int(e) *)
+  | Ufloat (* float(e) *)
 
 type binop =
-  | Badd | Bsub | Bmul | Bdiv | Bmod    (* + - * / % *)
-  | BaddR | BsubR | BmulR | BdivR       (* +. -. *. /. *)
+  | Badd | Bsub | Bmul | Bdiv | Bmod    (* + - * // % *)
+  | BaddR | BsubR | BmulR | BdivR       (* +. -. *. / *)
   | Beq | Bneq | Blt | Ble | Bgt | Bge  (* == != < <= > >= *)
   | Band | Bor                          (* && || *)
 
