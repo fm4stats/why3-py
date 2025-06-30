@@ -726,7 +726,7 @@ let typeinf_python fn =
   | _ -> raise (Failure "python type inference failure")
 
 let read_channel' env path file c =
-  let tmp_prefix = Option.value ~default:file (Filename.chop_suffix_opt ~suffix:".py" file) ^ "-" in
+  let tmp_prefix = Option.value ~default:file (Filename.chop_suffix_opt ~suffix:".py" (Filename.basename file)) ^ "-" in
   let (tmp_filename, tmp_out) = Filename.open_temp_file tmp_prefix ".py" in
   let cleanup () = Sys.remove tmp_filename in
   copy_io c tmp_out;
