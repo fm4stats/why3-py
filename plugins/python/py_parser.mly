@@ -421,7 +421,7 @@ simple_stmt: located(simple_stmt_desc) { $1 };
 simple_stmt_desc:
 | RETURN e = expr
     { Sreturn e }
-| lhs = expr EQUAL rhs = expr { Sassign (lhs, rhs) }
+| lhs = expr option(param_type) EQUAL rhs = expr { Sassign (lhs, rhs) }
 | id=ident o=binop_equal e=expr_nt
     { let loc = floc $startpos $endpos in
       Sassign (mk_var id,

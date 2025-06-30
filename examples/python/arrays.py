@@ -9,7 +9,7 @@ def side_effect1(tab):
     return 0
 
 a = [0]
-tab = []
+tab : list[int] = []
 
 a[side_effect1(tab)] += 1
 
