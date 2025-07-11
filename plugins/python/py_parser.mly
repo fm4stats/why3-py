@@ -97,38 +97,38 @@
 
 %}
 
-%token <string> INTEGER
-%token <Py_ast.real> REAL
-%token <string> STRING
-%token <Py_ast.binop> CMP
-%token <string> IDENT QIDENT TVAR
-%token DEF IF ELSE ELIF RETURN WHILE FOR IN AND OR NOT NONE TRUE FALSE PASS
-%token FROM IMPORT BREAK CONTINUE
-%token EOF
-%token LEFTPAR RIGHTPAR LEFTSQ RIGHTSQ COMMA EQUAL COLON BEGIN END NEWLINE
-       PLUSEQUAL MINUSEQUAL TIMESEQUAL DIVEQUAL MODEQUAL
-       LEFTBR RIGHTBR
-%token PLUS MINUS TIMES DIV MOD
-%token PLUSR MINUSR TIMESR DIVR
+%token <string> PyINTEGER
+%token <Py_ast.real> PyREAL
+%token <string> PySTRING
+%token <Py_ast.binop> PyCMP
+%token <string> PyIDENT PyQIDENT PyTVAR
+%token PyDEF PyIF PyELSE PyELIF PyRETURN PyWHILE PyFOR PyIN PyAND PyOR PyNOT PyNONE PyTRUE PyFALSE PyPASS
+%token PyFROM PyIMPORT PyBREAK PyCONTINUE
+%token PyEOF
+%token PyLEFTPAR PyRIGHTPAR PyLEFTSQ PyRIGHTSQ PyCOMMA PyEQUAL PyCOLON PyBEGIN PyEND PyNEWLINE
+       PyPLUSEQUAL PyMINUSEQUAL PyTIMESEQUAL PyDIVEQUAL PyMODEQUAL
+       PyLEFTBR PyRIGHTBR
+%token PyPLUS PyMINUS PyTIMES PyDIV PyMOD
+%token PyPLUSR PyMINUSR PyTIMESR PyDIVR
 (* annotations *)
-%token INVARIANT VARIANT ASSUME ASSERT CHECK REQUIRES ENSURES LABEL
-%token FUNCTION PREDICATE AXIOM LEMMA CONSTANT CALL
-%token ARROW LARROW LRARROW FORALL EXISTS DOT THEN LET OLD AT BY SO
+%token PyINVARIANT PyVARIANT PyASSUME PyASSERT PyCHECK PyREQUIRES PyENSURES PyLABEL
+%token PyFUNCTION PyPREDICATE PyAXIOM PyLEMMA PyCONSTANT PyCALL
+%token PyARROW PyLARROW PyLRARROW PyFORALL PyEXISTS PyDOT PyTHEN PyLET PyOLD PyAT PyBY PySO
 
 (* precedences *)
 
-%nonassoc IN
-%nonassoc DOT ELSE
-%right ARROW LRARROW BY SO
-%nonassoc IF
-%right OR
-%right AND
-%nonassoc NOT
-%right CMP
-%left PLUS MINUS PLUSR MINUSR
-%left TIMES DIV MOD TIMESR DIVR
+%nonassoc PyIN
+%nonassoc PyDOT PyELSE
+%right PyARROW PyLRARROW PyBY PySO
+%nonassoc PyIF
+%right PyOR
+%right PyAND
+%nonassoc PyNOT
+%right PyCMP
+%left PyPLUS PyMINUS PyPLUSR PyMINUSR
+%left PyTIMES PyDIV PyMOD PyTIMESR PyDIVR
 %nonassoc unary_minus prec_prefix_op
-%nonassoc LEFTSQ
+%nonassoc PyLEFTSQ
 
 %start file
 (* Transformations entries *)
@@ -142,9 +142,9 @@
 %%
 
 file:
-| NEWLINE* EOF
+| PyNEWLINE* PyEOF
     { [] }
-| NEWLINE? dl=nonempty_list(decl) NEWLINE? EOF
+| PyNEWLINE? dl=nonempty_list(decl) PyNEWLINE? PyEOF
     { dl }
 ;
 
@@ -157,36 +157,36 @@ decl:
 | const  { $1 }
 
 import:
-| FROM m=ident IMPORT l=separated_list(COMMA, ident) NEWLINE
+| PyFROM m=ident PyIMPORT l=separated_list(PyCOMMA, ident) PyNEWLINE
   { Dimport (m, l) }
 
 const:
-| CONSTANT NEWLINE id = ident EQUAL e = expr NEWLINE
+| PyCONSTANT PyNEWLINE id = ident PyEQUAL e = expr PyNEWLINE
   { Dconst (id,e) }
 
 prop:
-| LEMMA id=ident COLON t=term NEWLINE
+| PyLEMMA id=ident PyCOLON t=term PyNEWLINE
   { Dprop (Decl.Plemma, id, t) }
-| AXIOM id=ident COLON t=term NEWLINE
+| PyAXIOM id=ident PyCOLON t=term PyNEWLINE
   { Dprop (Decl.Paxiom, id, t) }
 
 func:
-| FUNCTION id=ident LEFTPAR l=separated_list(COMMA, param) RIGHTPAR
+| PyFUNCTION id=ident PyLEFTPAR l=separated_list(PyCOMMA, param) PyRIGHTPAR
   ty=option(function_type) var = option(fp_variant) def=option(logic_body)
-  NEWLINE
+  PyNEWLINE
   { let loc = floc $startpos $endpos in
     Dlogic (id, List.map (logic_param loc) l, Some (logic_type loc ty),
             var, def) }
-| PREDICATE id=ident LEFTPAR l=separated_list(COMMA, param) RIGHTPAR
-  var=option(fp_variant) def=option(logic_body) NEWLINE
+| PyPREDICATE id=ident PyLEFTPAR l=separated_list(PyCOMMA, param) PyRIGHTPAR
+  var=option(fp_variant) def=option(logic_body) PyNEWLINE
   { let loc = floc $startpos $endpos in
     Dlogic (id, List.map (logic_param loc) l, None, var, def) }
 
 fp_variant:
-| LEFTBR VARIANT v=term RIGHTBR { v }
+| PyLEFTBR PyVARIANT v=term PyRIGHTBR { v }
 
 logic_body:
-| EQUAL t=term
+| PyEQUAL t=term
   { t }
 
 param:
@@ -194,11 +194,11 @@ param:
   { id, ty }
 
 param_type:
-| COLON ty=typ
+| PyCOLON ty=typ
   { ty }
 
 function_type:
-| ARROW ty=typ
+| PyARROW ty=typ
   { ty }
 
 /* Note: "list" is a legal type annotation in Python; we make it a
@@ -211,15 +211,15 @@ typ:
     then PTtyapp (Qident id, [fresh_type_var (floc $startpos $endpos)])
     else if id.id_str = "float" then PTtyapp (Qident { id with id_str="real" }, [])
     else PTtyapp (Qident id, []) }
-| id=ident LEFTSQ tyl=separated_nonempty_list(COMMA, typ) RIGHTSQ
+| id=ident PyLEFTSQ tyl=separated_nonempty_list(PyCOMMA, typ) PyRIGHTSQ
     {
       if id.id_str = "Tuple" then PTtuple tyl else PTtyapp (Qident id, tyl)
     }
 
 def:
 | fct = as_funct
-  DEF f = ident LEFTPAR x = separated_list(COMMA, param) RIGHTPAR
-  ty=option(function_type) COLON NEWLINE BEGIN s=spec l=body END
+  PyDEF f = ident PyLEFTPAR x = separated_list(PyCOMMA, param) PyRIGHTPAR
+  ty=option(function_type) PyCOLON PyNEWLINE PyBEGIN s=spec l=body PyEND
     {
       if f.id_str = "range" then
         let loc = floc $startpos $endpos in
@@ -232,14 +232,14 @@ def:
 ;
 
 as_funct:
-| FUNCTION NEWLINE { true  }
+| PyFUNCTION PyNEWLINE { true  }
 | (* epsilon *)    { false }
 ;
 
 body:
 | nonempty_list(stmt)
   { fun _ _ -> $1 }
-| PASS NEWLINE
+| PyPASS PyNEWLINE
   { fun ty s -> [mk_stmt (floc $startpos $endpos) (Spass (ty, s))] }
 
 spec:
@@ -247,9 +247,9 @@ spec:
 | single_spec spec  { spec_union $1 $2 }
 
 single_spec:
-| REQUIRES t=term NEWLINE
+| PyREQUIRES t=term PyNEWLINE
     { { empty_spec with sp_pre = [t] } }
-| ENSURES e=ensures NEWLINE
+| PyENSURES e=ensures PyNEWLINE
     { { empty_spec with sp_post = [floc $startpos(e) $endpos(e), e] } }
 | variant
     { { empty_spec with sp_variant = $1 } }
@@ -268,7 +268,7 @@ expr_dot:
 expr_dot_:
 | id = ident
     { Eident id }
-| LEFTPAR e = expr RIGHTPAR
+| PyLEFTPAR e = expr PyRIGHTPAR
     { e.expr_desc }
 ;
 
@@ -280,13 +280,13 @@ expr:
 /*
 expr_desc:
   e = expr_nt { e.expr_desc }
-| e1 = expr_nt COMMA el = separated_list(COMMA, expr_nt)
+| e1 = expr_nt PyCOMMA el = separated_list(PyCOMMA, expr_nt)
     { Etuple (e1::el) }
 ;
 */
 expr_desc:
   e = expr_nt_desc { e }
-| e = expr_nt COMMA el = separated_list(COMMA, expr_nt) { Etuple (e::el) }
+| e = expr_nt PyCOMMA el = separated_list(PyCOMMA, expr_nt) { Etuple (e::el) }
 ;
 
 expr_nt:
@@ -295,21 +295,21 @@ expr_nt:
 ;
 
 expr_nt_desc:
-| NONE
+| PyNONE
     { Enone }
-| TRUE
+| PyTRUE
     { Ebool true }
-| FALSE
+| PyFALSE
     { Ebool false }
-| c = INTEGER
+| c = PyINTEGER
     { Eint c }
-| c = REAL
+| c = PyREAL
     { Ereal c }
-| s = STRING
+| s = PySTRING
     { Estring s }
-| e1 = expr_nt LEFTSQ e2 = expr_nt RIGHTSQ
+| e1 = expr_nt PyLEFTSQ e2 = expr_nt PyRIGHTSQ
     { Eget (e1, e2) }
-| e1 = expr_nt LEFTSQ e2=option(expr_nt) COLON e3=option(expr_nt) RIGHTSQ
+| e1 = expr_nt PyLEFTSQ e2=option(expr_nt) PyCOLON e3=option(expr_nt) PyRIGHTSQ
     {
       let f = mk_id "slice" $startpos $endpos in
       let none = mk_expr (floc $startpos $endpos) Enone in
@@ -321,17 +321,17 @@ expr_nt_desc:
       in
       Ecall(f,[e1;e2;e3])
     }
-| MINUS e1 = expr_nt %prec unary_minus
+| PyMINUS e1 = expr_nt %prec unary_minus
     { Eunop (Uneg, e1) }
-| NOT e1 = expr_nt
+| PyNOT e1 = expr_nt
     { Eunop (Unot, e1) }
 | e1 = expr_nt o = binop e2 = expr_nt
     { mk_ebinop (floc $startpos $endpos) o e1 e2 }
-| e1 = expr_nt TIMES e2 = expr_nt
+| e1 = expr_nt PyTIMES e2 = expr_nt
     { match e1.expr_desc with
       | Elist [e1] -> Emake (e1, e2)
       | _ -> mk_ebinop (floc $startpos $endpos) Bmul e1 e2 }
-| e=expr_dot DOT f=ident LEFTPAR el=separated_list(COMMA, expr_nt) RIGHTPAR
+| e=expr_dot PyDOT f=ident PyLEFTPAR el=separated_list(PyCOMMA, expr_nt) PyRIGHTPAR
     {
       match f.id_str with
       | "pop" | "append" | "reverse" | "clear" | "copy" | "sort" ->
@@ -339,28 +339,28 @@ expr_nt_desc:
       | m -> let loc = floc $startpos $endpos in
              Loc.errorm ~loc "The method '%s' is not implemented" m
     }
-| f = ident LEFTPAR e = separated_list(COMMA, expr_nt) RIGHTPAR
+| f = ident PyLEFTPAR e = separated_list(PyCOMMA, expr_nt) PyRIGHTPAR
     { Ecall (f, e) }
-| LEFTSQ l = separated_list(COMMA, expr_nt) RIGHTSQ
+| PyLEFTSQ l = separated_list(PyCOMMA, expr_nt) PyRIGHTSQ
     { Elist l }
-| e1=expr_nt IF c=expr_nt ELSE e2=expr_nt
+| e1=expr_nt PyIF c=expr_nt PyELSE e2=expr_nt
     { Econd(c,e1,e2) }
 | e=expr_dot_
     { e }
 ;
 
 %inline binop:
-| PLUS  { Badd }
-| MINUS { Bsub }
-| DIV   { Bdiv }
-| MOD   { Bmod }
-| PLUSR  { BaddR }
-| MINUSR  { BsubR }
-| TIMESR  { BmulR }
-| DIVR  { BdivR }
-| c=CMP { c    }
-| AND   { Band }
-| OR    { Bor  }
+| PyPLUS  { Badd }
+| PyMINUS { Bsub }
+| PyDIV   { Bdiv }
+| PyMOD   { Bmod }
+| PyPLUSR  { BaddR }
+| PyMINUSR  { BsubR }
+| PyTIMESR  { BmulR }
+| PyDIVR  { BdivR }
+| c=PyCMP { c    }
+| PyAND   { Band }
+| PyOR    { Bor  }
 ;
 
 located(X):
@@ -368,38 +368,38 @@ located(X):
 ;
 
 suite:
-| s = simple_stmt NEWLINE
+| s = simple_stmt PyNEWLINE
     { [s] }
-| NEWLINE BEGIN l = nonempty_list(stmt) END
+| PyNEWLINE PyBEGIN l = nonempty_list(stmt) PyEND
     { l }
 ;
 
 stmt:
 | located(stmt_desc)      { $1 }
-| s = simple_stmt NEWLINE { s }
+| s = simple_stmt PyNEWLINE { s }
 
 stmt_desc:
-| IF c = expr_nt COLON s1 = suite s2=else_branch
+| PyIF c = expr_nt PyCOLON s1 = suite s2=else_branch
     { Sif (c, s1, s2) }
-| WHILE e = expr_nt COLON b=loop_body
+| PyWHILE e = expr_nt PyCOLON b=loop_body
     { let i, v, l = b in Swhile (e, i, v, l) }
-| FOR x = ident IN e = expr COLON b=loop_body
+| PyFOR x = ident PyIN e = expr PyCOLON b=loop_body
     { let i, _, l = b in Sfor (x, e, i, l) }
 ;
 
 else_branch:
 | /* epsilon */
     { [] }
-| ELSE COLON s2=suite
+| PyELSE PyCOLON s2=suite
     { s2 }
-| ELIF c=expr_nt COLON s1=suite s2=else_branch
+| PyELIF c=expr_nt PyCOLON s1=suite s2=else_branch
     { [mk_stmt (floc $startpos $endpos) (Sif (c, s1, s2))] }
 
 
 loop_body:
-| s = simple_stmt NEWLINE
+| s = simple_stmt PyNEWLINE
   { [], [], [s] }
-| NEWLINE BEGIN a=loop_annotation l=nonempty_list(stmt) END
+| PyNEWLINE PyBEGIN a=loop_annotation l=nonempty_list(stmt) PyEND
   { fst a, snd a, l }
 
 loop_annotation:
@@ -411,22 +411,22 @@ loop_annotation:
     { let (i, v) = $2 in (i, variant_union $1 v) }
 
 invariant:
-| INVARIANT i=term NEWLINE { i }
+| PyINVARIANT i=term PyNEWLINE { i }
 
 variant:
-| VARIANT l=comma_list1(term) NEWLINE { List.map (fun t -> t, None) l }
+| PyVARIANT l=comma_list1(term) PyNEWLINE { List.map (fun t -> t, None) l }
 
 simple_stmt: located(simple_stmt_desc) { $1 };
 
 simple_stmt_desc:
-| RETURN e = expr
+| PyRETURN e = expr
     { Sreturn e }
-| lhs = expr option(param_type) EQUAL rhs = expr { Sassign (lhs, rhs) }
+| lhs = expr option(param_type) PyEQUAL rhs = expr { Sassign (lhs, rhs) }
 | id=ident o=binop_equal e=expr_nt
     { let loc = floc $startpos $endpos in
       Sassign (mk_var id,
                mk_expr loc (Ebinop (o, mk_expr loc (Eident id), e))) }
-| e0 = expr_nt LEFTSQ e1 = expr_nt RIGHTSQ o=binop_equal e2 = expr
+| e0 = expr_nt PyLEFTSQ e1 = expr_nt PyRIGHTSQ o=binop_equal e2 = expr
     {
       let loc = floc $startpos $endpos in
       let mk_expr_floc = mk_expr loc in
@@ -449,37 +449,37 @@ simple_stmt_desc:
     { Sassert (k, t) }
 | e = expr
     { Seval e }
-| CALL f = ident LEFTPAR e = separated_list(COMMA, term) RIGHTPAR
+| PyCALL f = ident PyLEFTPAR e = separated_list(PyCOMMA, term) PyRIGHTPAR
     { Scall_lemma (f, e) }
-| BREAK
+| PyBREAK
     { Sbreak }
-| CONTINUE
+| PyCONTINUE
     { Scontinue }
-| LABEL id=ident
+| PyLABEL id=ident
     { Slabel id }
 ;
 
 %inline binop_equal:
-| PLUSEQUAL  { Badd }
-| MINUSEQUAL { Bsub }
-| DIVEQUAL   { Bdiv }
-| TIMESEQUAL { Bmul }
-| MODEQUAL   { Bmod }
+| PyPLUSEQUAL  { Badd }
+| PyMINUSEQUAL { Bsub }
+| PyDIVEQUAL   { Bdiv }
+| PyTIMESEQUAL { Bmul }
+| PyMODEQUAL   { Bmod }
 ;
 
 assertion_kind:
-| ASSERT  { Expr.Assert }
-| ASSUME  { Expr.Assume }
-| CHECK   { Expr.Check }
+| PyASSERT  { Expr.Assert }
+| PyASSUME  { Expr.Assume }
+| PyCHECK   { Expr.Check }
 
 ident:
-| id = IDENT { mk_id id $startpos $endpos }
+| id = PyIDENT { mk_id id $startpos $endpos }
 ;
 quote_ident:
-| id = QIDENT { mk_id id $startpos $endpos }
+| id = PyQIDENT { mk_id id $startpos $endpos }
 ;
 type_var:
-| id = TVAR { mk_id id $startpos $endpos }
+| id = PyTVAR { mk_id id $startpos $endpos }
 ;
 
 /* logic */
@@ -489,7 +489,7 @@ mk_term(X): d = X { mk_term d $startpos $endpos }
 term_tuple: t = mk_term(term_tuple_) { t }
 
 term_tuple_:
-| t = term ; COMMA; lt=separated_list(COMMA, term)
+| t = term ; PyCOMMA; lt=separated_list(PyCOMMA, term)
     { Ttuple (t::lt) }
 | t = term_ { t }
 
@@ -501,11 +501,11 @@ term_:
       | Tinfix (l,o,r) -> Tinnfix (l,o,r)
       | Tbinop (l,o,r) -> Tbinnop (l,o,r)
       | d -> d }
-| NOT term
+| PyNOT term
     { Tnot $2 }
-| OLD LEFTPAR t=term RIGHTPAR
+| PyOLD PyLEFTPAR t=term PyRIGHTPAR
     { Tat (t, mk_id Dexpr.old_label $startpos($1) $endpos($1)) }
-| AT LEFTPAR t=term COMMA l=ident RIGHTPAR
+| PyAT PyLEFTPAR t=term PyCOMMA l=ident PyRIGHTPAR
     { Tat (t, l) }
 | o = prefix_op ; t = term %prec prec_prefix_op
     { Tidapp (Qident o, [t]) }
@@ -515,39 +515,39 @@ term_:
     { Tinfix (l, o, r) }
 | l = term ; o = infix_op_234 ; r = term
     { Tidapp (Qident o, [l; r]) }
-| IF term THEN term ELSE term
+| PyIF term PyTHEN term PyELSE term
     { Tif ($2, $4, $6) }
-| LET id=ident EQUAL t1=term IN t2=term
+| PyLET id=ident PyEQUAL t1=term PyIN t2=term
     { Tlet (id, t1, t2) }
-| q=quant l=comma_list1(param) DOT t=term
+| q=quant l=comma_list1(param) PyDOT t=term
     { let var (id, ty) = id.id_loc, Some id, false, ty in
       Tquant (q, List.map var l, [], t) }
-| id=ident LEFTPAR l=separated_list(COMMA, term) RIGHTPAR
+| id=ident PyLEFTPAR l=separated_list(PyCOMMA, term) PyRIGHTPAR
     { Tidapp (Qident id, l) }
 
 quant:
-| FORALL  { Dterm.DTforall }
-| EXISTS  { Dterm.DTexists }
+| PyFORALL  { Dterm.DTforall }
+| PyEXISTS  { Dterm.DTexists }
 
 term_arg: mk_term(term_arg_) { $1 }
 
 term_arg_:
 | quote_ident { Tident (Qident $1) }
 | ident       { Tident (Qident $1) }
-| INTEGER     { Tconst (Constant.ConstInt Number.(int_literal ILitDec ~neg:false $1)) }
-| REAL        { Tconst (Constant.ConstReal Number.(real_literal ~radix:10 ~neg:false ~int:$1.intpart ~frac:$1.fracpart ~exp:$1.exppart)) }
-| NONE        { Ttuple [] }
-| TRUE        { Ttrue }
-| FALSE       { Tfalse }
+| PyINTEGER     { Tconst (Constant.ConstInt Number.(int_literal ILitDec ~neg:false $1)) }
+| PyREAL        { Tconst (Constant.ConstReal Number.(real_literal ~radix:10 ~neg:false ~int:$1.intpart ~frac:$1.fracpart ~exp:$1.exppart)) }
+| PyNONE        { Ttuple [] }
+| PyTRUE        { Ttrue }
+| PyFALSE       { Tfalse }
 | term_sub_                 { $1 }
 
 term_sub_:
-| LEFTPAR term_tuple RIGHTPAR                             { $2.term_desc }
-| term_arg LEFTSQ term RIGHTSQ
+| PyLEFTPAR term_tuple PyRIGHTPAR                             { $2.term_desc }
+| term_arg PyLEFTSQ term PyRIGHTSQ
     { Tidapp (get_op $startpos($2) $endpos($2), [$1;$3]) }
-| term_arg LEFTSQ term LARROW term RIGHTSQ
+| term_arg PyLEFTSQ term PyLARROW term PyRIGHTSQ
     { Tidapp (upd_op $startpos($2) $endpos($2), [$1;$3;$5]) }
-| e1 = term_arg LEFTSQ e2=option(term) COLON e3=option(term) RIGHTSQ
+| e1 = term_arg PyLEFTSQ e2=option(term) PyCOLON e3=option(term) PyRIGHTSQ
     {
       let slice = mk_id "slice" $startpos $endpos in
       let len = mk_id "len" $startpos $endpos in
@@ -565,15 +565,15 @@ term_sub_:
     }
 
 %inline bin_op:
-| ARROW   { Dterm.DTimplies }
-| LRARROW { Dterm.DTiff }
-| OR      { Dterm.DTor }
-| AND     { Dterm.DTand }
-| BY      { Dterm.DTby }
-| SO      { Dterm.DTso }
+| PyARROW   { Dterm.DTimplies }
+| PyLRARROW { Dterm.DTiff }
+| PyOR      { Dterm.DTor }
+| PyAND     { Dterm.DTand }
+| PyBY      { Dterm.DTby }
+| PySO      { Dterm.DTso }
 
 %inline infix_op_1:
-| c=CMP  { let op = match c with
+| c=PyCMP  { let op = match c with
           | Beq  -> "="
           | Bneq -> "<>"
           | Blt  -> "<"
@@ -584,33 +584,33 @@ term_sub_:
            mk_id (Ident.op_infix op) $startpos $endpos }
 
 %inline prefix_op:
-| MINUS { mk_id (Ident.op_prefix "-")  $startpos $endpos }
+| PyMINUS { mk_id (Ident.op_prefix "-")  $startpos $endpos }
 
 %inline infix_op_234:
-| DIV    { mk_id (Ident.op_infix "//") $startpos $endpos }
-| MOD    { mk_id (Ident.op_infix "%") $startpos $endpos }
-| PLUS   { mk_id (Ident.op_infix "+") $startpos $endpos }
-| MINUS  { mk_id (Ident.op_infix "-") $startpos $endpos }
-| TIMES  { mk_id (Ident.op_infix "*") $startpos $endpos }
-| PLUSR  { mk_id (Ident.op_infix "+.") $startpos $endpos }
-| MINUSR { mk_id (Ident.op_infix "-.") $startpos $endpos }
-| TIMESR { mk_id (Ident.op_infix "*.") $startpos $endpos }
-| DIVR   { mk_id (Ident.op_infix "/.") $startpos $endpos }
+| PyDIV    { mk_id (Ident.op_infix "//") $startpos $endpos }
+| PyMOD    { mk_id (Ident.op_infix "%") $startpos $endpos }
+| PyPLUS   { mk_id (Ident.op_infix "+") $startpos $endpos }
+| PyMINUS  { mk_id (Ident.op_infix "-") $startpos $endpos }
+| PyTIMES  { mk_id (Ident.op_infix "*") $startpos $endpos }
+| PyPLUSR  { mk_id (Ident.op_infix "+.") $startpos $endpos }
+| PyMINUSR { mk_id (Ident.op_infix "-.") $startpos $endpos }
+| PyTIMESR { mk_id (Ident.op_infix "*.") $startpos $endpos }
+| PyDIVR   { mk_id (Ident.op_infix "/.") $startpos $endpos }
 
 comma_list1(X):
-| separated_nonempty_list(COMMA, X) { $1 }
+| separated_nonempty_list(PyCOMMA, X) { $1 }
 
 (* Parsing of a list of qualified identifiers for the ITP *)
 
 (* parsing of a single term *)
 
 term_eof:
-| term NEWLINE EOF { $1 }
+| term PyNEWLINE PyEOF { $1 }
 
 ident_comma_list_eof:
-| comma_list1(ident) NEWLINE EOF { $1 }
+| comma_list1(ident) PyNEWLINE PyEOF { $1 }
 
 term_comma_list_eof:
-| comma_list1(term) NEWLINE EOF { $1 }
+| comma_list1(term) PyNEWLINE PyEOF { $1 }
 (* we use single_term to avoid conflict with tuples, that
    do not need parentheses *)

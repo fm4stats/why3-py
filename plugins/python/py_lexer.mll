@@ -23,27 +23,27 @@
   let id_or_kwd =
     let h = Hashtbl.create 32 in
     List.iter (fun (s, tok) -> Hashtbl.add h s tok)
-      ["def", DEF; "if", IF; "else", ELSE; "elif", ELIF;
-       "return", RETURN; "while", WHILE; "pass", PASS;
-       "for", FOR; "in", IN;
-       "and", AND; "or", OR; "not", NOT;
-       "True", TRUE; "False", FALSE; "None", NONE;
-       "from", FROM; "import", IMPORT; "break", BREAK; "continue", CONTINUE;
+      ["def", PyDEF; "if", PyIF; "else", PyELSE; "elif", PyELIF;
+       "return", PyRETURN; "while", PyWHILE; "pass", PyPASS;
+       "for", PyFOR; "in", PyIN;
+       "and", PyAND; "or", PyOR; "not", PyNOT;
+       "True", PyTRUE; "False", PyFALSE; "None", PyNONE;
+       "from", PyFROM; "import", PyIMPORT; "break", PyBREAK; "continue", PyCONTINUE;
        (* annotations *)
-       "forall", FORALL; "exists", EXISTS; "then", THEN; "let", LET;
-       "old", OLD; "at", AT; "variant", VARIANT; "call", CALL;
-       "by", BY; "so", SO;
+       "forall", PyFORALL; "exists", PyEXISTS; "then", PyTHEN; "let", PyLET;
+       "old", PyOLD; "at", PyAT; "variant", PyVARIANT; "call", PyCALL;
+       "by", PyBY; "so", PySO;
       ];
-   fun s -> try Hashtbl.find h s with Not_found -> IDENT s
+   fun s -> try Hashtbl.find h s with Not_found -> PyIDENT s
 
   let annotation =
     let h = Hashtbl.create 32 in
     List.iter (fun (s, tok) -> Hashtbl.add h s tok)
-      ["invariant", INVARIANT; "variant", VARIANT;
-       "assert", ASSERT; "assume", ASSUME; "check", CHECK;
-       "requires", REQUIRES; "ensures", ENSURES;
-       "axiom", AXIOM; "lemma", LEMMA; "call", CALL; "constant", CONSTANT;
-       "label", LABEL; "function", FUNCTION; "predicate", PREDICATE;
+      ["invariant", PyINVARIANT; "variant", PyVARIANT;
+       "assert", PyASSERT; "assume", PyASSUME; "check", PyCHECK;
+       "requires", PyREQUIRES; "ensures", PyENSURES;
+       "axiom", PyAXIOM; "lemma", PyLEMMA; "call", PyCALL; "constant", PyCONSTANT;
+       "label", PyLABEL; "function", PyFUNCTION; "predicate", PyPREDICATE;
       ];
     fun s -> try Hashtbl.find h s with Not_found ->
       raise (Lexing_error ("no such annotation '" ^ s ^ "'"))
@@ -54,16 +54,16 @@
 
   let rec unindent n = match !stack with
     | m :: _ when m = n -> []
-    | m :: st when m > n -> stack := st; END :: unindent n
+    | m :: st when m > n -> stack := st; PyEND :: unindent n
     | _ -> raise (Lexing_error "bad indentation")
 
   let update_stack n =
     match !stack with
     | m :: _ when m < n ->
       stack := n :: !stack;
-      [NEWLINE; BEGIN]
+      [PyNEWLINE; PyBEGIN]
     | _ ->
-      NEWLINE :: unindent n
+      PyNEWLINE :: unindent n
 
 }
 
@@ -88,56 +88,56 @@ rule next_tokens = parse
   | ident as id
             { [id_or_kwd id] }
   | (ident ("'" ident)+) as id
-            { [QIDENT id] }
+            { [PyQIDENT id] }
   | "'" (ident as id)
-            { [TVAR id] }
-  | '+'     { [PLUS] }
-  | "+="    { [PLUSEQUAL] }
-  | "-="    { [MINUSEQUAL] }
-  | "*="    { [TIMESEQUAL] }
-  | "//="   { [DIVEQUAL] }
-  | "%="    { [MODEQUAL] }
-  | '-'     { [MINUS] }
-  | '*'     { [TIMES] }
-  | "//"    { [DIV] }
-  | '%'     { [MOD] }
-  | "+."    { [PLUSR] }
-  | "-."    { [MINUSR] }
-  | "*."    { [TIMESR] }
-  | "/"     { [DIVR] }
-  | '='     { [EQUAL] }
-  | "=="    { [CMP Beq] }
-  | "!="    { [CMP Bneq] }
-  | "<"     { [CMP Blt] }
-  | "<="    { [CMP Ble] }
-  | ">"     { [CMP Bgt] }
-  | ">="    { [CMP Bge] }
-  | '('     { [LEFTPAR] }
-  | ')'     { [RIGHTPAR] }
-  | '['     { [LEFTSQ] }
-  | ']'     { [RIGHTSQ] }
-  | '{'     { [LEFTBR] }
-  | '}'     { [RIGHTBR] }
-  | ','     { [COMMA] }
-  | ':'     { [COLON] }
+            { [PyTVAR id] }
+  | '+'     { [PyPLUS] }
+  | "+="    { [PyPLUSEQUAL] }
+  | "-="    { [PyMINUSEQUAL] }
+  | "*="    { [PyTIMESEQUAL] }
+  | "//="   { [PyDIVEQUAL] }
+  | "%="    { [PyMODEQUAL] }
+  | '-'     { [PyMINUS] }
+  | '*'     { [PyTIMES] }
+  | "//"    { [PyDIV] }
+  | '%'     { [PyMOD] }
+  | "+."    { [PyPLUSR] }
+  | "-."    { [PyMINUSR] }
+  | "*."    { [PyTIMESR] }
+  | "/"     { [PyDIVR] }
+  | '='     { [PyEQUAL] }
+  | "=="    { [PyCMP Beq] }
+  | "!="    { [PyCMP Bneq] }
+  | "<"     { [PyCMP Blt] }
+  | "<="    { [PyCMP Ble] }
+  | ">"     { [PyCMP Bgt] }
+  | ">="    { [PyCMP Bge] }
+  | '('     { [PyLEFTPAR] }
+  | ')'     { [PyRIGHTPAR] }
+  | '['     { [PyLEFTSQ] }
+  | ']'     { [PyRIGHTSQ] }
+  | '{'     { [PyLEFTBR] }
+  | '}'     { [PyRIGHTBR] }
+  | ','     { [PyCOMMA] }
+  | ':'     { [PyCOLON] }
   (* logic symbols *)
-  | "->"    { [ARROW] }
-  | "<-"    { [LARROW] }
-  | "<->"   { [LRARROW] }
-  | "."     { [DOT] }
+  | "->"    { [PyARROW] }
+  | "<-"    { [PyLARROW] }
+  | "<->"   { [PyLRARROW] }
+  | "."     { [PyDOT] }
   | integer as s
-            { [INTEGER s] }
+            { [PyINTEGER s] }
   | ( (digitpart as i) ("" as f)
     | (digitpart as i) '.' ("" as f)
     | ("" as i) '.' (digitpart as f)
     | (digitpart as i) '.' (digitpart as f) )
     (['e' 'E'] (['-' '+']? digitpart as e))?
-            { [REAL {
+            { [PyREAL {
                 intpart=(Why3.Lexlib.remove_underscores i);
                 fracpart=(Why3.Lexlib.remove_underscores f);
                 exppart=(Option.map (fun s -> Why3.Lexlib.remove_leading_plus (Why3.Lexlib.remove_underscores s)) e)}] }
-  | '"'     { [STRING (string lexbuf)] }
-  | eof     { NEWLINE :: unindent 0 @ [EOF] }
+  | '"'     { [PySTRING (string lexbuf)] }
+  | eof     { PyNEWLINE :: unindent 0 @ [PyEOF] }
   | _ as c  { raise (Lexing_error ("illegal character: " ^ String.make 1 c)) }
 
 (* count the indentation, i.e. the number of space characters from bol *)
