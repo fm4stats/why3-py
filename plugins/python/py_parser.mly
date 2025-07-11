@@ -127,7 +127,7 @@
 %right PyCMP
 %left PyPLUS PyMINUS PyPLUSR PyMINUSR
 %left PyTIMES PyDIV PyMOD PyTIMESR PyDIVR
-%nonassoc unary_minus prec_prefix_op
+%nonassoc py_unary_minus py_prec_prefix_op
 %nonassoc PyLEFTSQ
 
 %start file
@@ -321,7 +321,7 @@ expr_nt_desc:
       in
       Ecall(f,[e1;e2;e3])
     }
-| PyMINUS e1 = expr_nt %prec unary_minus
+| PyMINUS e1 = expr_nt %prec py_unary_minus
     { Eunop (Uneg, e1) }
 | PyNOT e1 = expr_nt
     { Eunop (Unot, e1) }
@@ -507,7 +507,7 @@ term_:
     { Tat (t, mk_id Dexpr.old_label $startpos($1) $endpos($1)) }
 | PyAT PyLEFTPAR t=term PyCOMMA l=ident PyRIGHTPAR
     { Tat (t, l) }
-| o = prefix_op ; t = term %prec prec_prefix_op
+| o = prefix_op ; t = term %prec py_prec_prefix_op
     { Tidapp (Qident o, [t]) }
 | l = term ; o = bin_op ; r = term
     { Tbinop (l, o, r) }
