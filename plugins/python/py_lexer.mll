@@ -178,7 +178,7 @@ and string = parse
 
   let parse_file lb =
     let module I = Py_parser.MenhirInterpreter in
-    let checkpoint = Py_parser.Incremental.file lb.lex_curr_p in
+    let checkpoint = Py_parser.Incremental.py_file lb.lex_curr_p in
     let supplier () =
       let pos1 = lb.lex_curr_p in
       let tok = next_token lb in
@@ -196,11 +196,11 @@ and string = parse
   (* Entries for transformations: similar to lexer.mll *)
   let build_parsing_function entry lb = Why3.Loc.with_location (entry next_token) lb
 
-  let parse_term = build_parsing_function Py_parser.term_eof
+  let parse_term = build_parsing_function Py_parser.py_term_eof
 
-  let parse_term_list = build_parsing_function Py_parser.term_comma_list_eof
+  let parse_term_list = build_parsing_function Py_parser.py_term_comma_list_eof
 
-  let parse_list_ident = build_parsing_function Py_parser.ident_comma_list_eof
+  let parse_list_ident = build_parsing_function Py_parser.py_ident_comma_list_eof
 
 
 }
