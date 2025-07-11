@@ -176,11 +176,22 @@ and string = parse
       end;
       Queue.pop tokens
 
+  let parse_file lb =
+    let module I = Py_parser.MenhirInterpreter in
+    let checkpoint = Py_parser.Incremental.file lb.lex_curr_p in
+    let supplier () =
+      let pos1 = lb.lex_curr_p in
+      let tok = next_token lb in
+      let pos2 = lb.lex_curr_p in
+      (tok, pos1, pos2)
+    in
+    I.loop supplier checkpoint
+
   let parse file c =
     let lb = Lexing.from_channel c in
     Why3.Loc.set_file file lb;
     stack := [0];  (* reinitialise indentation stack *)
-    Why3.Loc.with_location (Py_parser.file next_token) lb
+    Why3.Loc.with_location parse_file lb
 
   (* Entries for transformations: similar to lexer.mll *)
   let build_parsing_function entry lb = Why3.Loc.with_location (entry next_token) lb
