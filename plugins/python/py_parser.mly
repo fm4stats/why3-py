@@ -22,9 +22,9 @@
   let mk_id id s e = { id_str = id; id_ats = []; id_loc = floc s e }
   let mk_pat  d s e = { pat_desc  = d; pat_loc  = floc s e }
   let mk_term d s e = { term_desc = d; term_loc = floc s e }
-  let mk_expr loc d = { expr_desc = d; expr_loc = loc }
+  let py_mk_expr loc d = { expr_desc = d; expr_loc = loc }
   let mk_stmt loc d = Dstmt { stmt_desc = d; stmt_loc = loc }
-  let mk_var id = mk_expr id.id_loc (Eident id)
+  let mk_var id = py_mk_expr id.id_loc (Eident id)
 
   let mk_ebinop loc o e1 e2 =
     match !Py_type.py_type_tbl with
@@ -51,8 +51,8 @@
             in
             match arg_types, ret_type with
             | ["float"; "float"], "float" -> Ebinop (real_op, e1, e2)
-            | ["float"; "int"], "float" -> Ebinop (real_op, e1, mk_expr e2.expr_loc (Eunop (Ufloat, e2)))
-            | ["int"; "float"], "float" -> Ebinop (real_op, mk_expr e1.expr_loc (Eunop (Ufloat, e1)), e2)
+            | ["float"; "int"], "float" -> Ebinop (real_op, e1, py_mk_expr e2.expr_loc (Eunop (Ufloat, e2)))
+            | ["int"; "float"], "float" -> Ebinop (real_op, py_mk_expr e1.expr_loc (Eunop (Ufloat, e1)), e2)
             | _ -> Ebinop (o, e1, e2)
 
   let variant_union v1 v2 = match v1, v2 with
@@ -61,8 +61,8 @@
     | _, ({term_loc = loc},_)::_ -> Loc.errorm ~loc
         "multiple `variant' clauses are not allowed"
 
-  let get_op s e = Qident (mk_id (Ident.op_get "") s e)
-  let upd_op s e = Qident (mk_id (Ident.op_update "") s e)
+  let py_get_op s e = Qident (mk_id (Ident.op_get "") s e)
+  let py_upd_op s e = Qident (mk_id (Ident.op_update "") s e)
 
   let empty_spec = {
     sp_pre     = [];    sp_post    = [];  sp_xpost  = [];
@@ -262,7 +262,7 @@ py_ensures:
 
 py_expr_dot:
 | d = py_expr_dot_
-   { mk_expr (floc $startpos $endpos) d }
+   { py_mk_expr (floc $startpos $endpos) d }
 ;
 
 py_expr_dot_:
@@ -274,7 +274,7 @@ py_expr_dot_:
 
 py_expr:
 | d = py_expr_desc
-   { mk_expr (floc $startpos $endpos) d }
+   { py_mk_expr (floc $startpos $endpos) d }
 ;
 
 /*
@@ -291,7 +291,7 @@ py_expr_desc:
 
 py_expr_nt:
 | d = py_expr_nt_desc
-   { mk_expr (floc $startpos $endpos) d }
+   { py_mk_expr (floc $startpos $endpos) d }
 ;
 
 py_expr_nt_desc:
@@ -312,7 +312,7 @@ py_expr_nt_desc:
 | e1 = py_expr_nt PyLEFTSQ e2=option(py_expr_nt) PyCOLON e3=option(py_expr_nt) PyRIGHTSQ
     {
       let f = mk_id "slice" $startpos $endpos in
-      let none = mk_expr (floc $startpos $endpos) Enone in
+      let none = py_mk_expr (floc $startpos $endpos) Enone in
       let e2, e3 = match e2, e3 with
         | None, None -> none, none
         | Some e, None -> e, none
@@ -425,11 +425,11 @@ py_simple_stmt_desc:
 | id=py_ident o=py_binop_equal e=py_expr_nt
     { let loc = floc $startpos $endpos in
       Sassign (mk_var id,
-               mk_expr loc (Ebinop (o, mk_expr loc (Eident id), e))) }
+               py_mk_expr loc (Ebinop (o, py_mk_expr loc (Eident id), e))) }
 | e0 = py_expr_nt PyLEFTSQ e1 = py_expr_nt PyRIGHTSQ o=py_binop_equal e2 = py_expr
     {
       let loc = floc $startpos $endpos in
-      let mk_expr_floc = mk_expr loc in
+      let mk_expr_floc = py_mk_expr loc in
       let id = mk_id "'i" $startpos $endpos in
       let expr_id = mk_expr_floc (Eident id) in
       let a = mk_id "'a" $startpos $endpos in
@@ -544,9 +544,9 @@ py_term_arg_:
 py_term_sub_:
 | PyLEFTPAR py_term_tuple PyRIGHTPAR                             { $2.term_desc }
 | py_term_arg PyLEFTSQ py_term PyRIGHTSQ
-    { Tidapp (get_op $startpos($2) $endpos($2), [$1;$3]) }
+    { Tidapp (py_get_op $startpos($2) $endpos($2), [$1;$3]) }
 | py_term_arg PyLEFTSQ py_term PyLARROW py_term PyRIGHTSQ
-    { Tidapp (upd_op $startpos($2) $endpos($2), [$1;$3;$5]) }
+    { Tidapp (py_upd_op $startpos($2) $endpos($2), [$1;$3;$5]) }
 | e1 = py_term_arg PyLEFTSQ e2=option(py_term) PyCOLON e3=option(py_term) PyRIGHTSQ
     {
       let slice = mk_id "slice" $startpos $endpos in
