@@ -139,6 +139,8 @@
 %type <Py_ast.file> py_file
 %type <Py_ast.decl> py_stmt
 
+%start <unit> dummy
+
 %%
 
 py_file:
@@ -614,3 +616,16 @@ py_term_comma_list_eof:
 | py_comma_list1(py_term) PyNEWLINE PyEOF { $1 }
 (* we use single_term to avoid conflict with tuples, that
    do not need parentheses *)
+
+/* silent Menhir's errors about unreachable non terminal symbols */
+
+dummy:
+| module_head_parsing_only scope_head_parsing_only dummy_decl* EOF
+    { }
+
+dummy_decl:
+| meta_decl {}
+| use_clone_parsing_only {}
+| prog_decl {}
+| pure_decl {}
+

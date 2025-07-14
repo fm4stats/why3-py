@@ -2166,7 +2166,7 @@ pl%gins/coma/coma_parser.ml pl%gins/coma/coma_parser.mli: src/parser/parser_comm
 
 pl%gins/python/py_parser.ml pl%gins/python/py_parser.mli: src/parser/parser_common.mly plugins/python/py_parser.mly
 	$(SHOW) 'Menhir $^'
-	$(HIDE)$(MENHIR) --table --explain --base plugins/python/py_parser $^
+	$(HIDE)$(MENHIR) --table --explain --strict --base plugins/python/py_parser $^
 	$(HIDE)for f in plugins/python/py_parser.mli plugins/python/py_parser.ml; do (echo "open Why3"; cat $$f) > $$f.new && mv $$f.new $$f; done
 
 %.ml %.mli: %.mly
