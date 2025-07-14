@@ -18,10 +18,10 @@
     | Error -> Format.pp_print_string fmt "syntax error"
     | _ -> raise exn)
 
-  let floc s e = Loc.extract (s,e)
-  let mk_id id s e = { id_str = id; id_ats = []; id_loc = floc s e }
-  let mk_pat  d s e = { pat_desc  = d; pat_loc  = floc s e }
-  let mk_term d s e = { term_desc = d; term_loc = floc s e }
+  let py_floc s e = Loc.extract (s,e)
+  let py_mk_id id s e = { id_str = id; id_ats = []; id_loc = py_floc s e }
+  let py_mk_pat  d s e = { pat_desc  = d; pat_loc  = py_floc s e }
+  let py_mk_term d s e = { term_desc = d; term_loc = py_floc s e }
   let py_mk_expr loc d = { expr_desc = d; expr_loc = loc }
   let mk_stmt loc d = Dstmt { stmt_desc = d; stmt_loc = loc }
   let mk_var id = py_mk_expr id.id_loc (Eident id)
@@ -55,30 +55,30 @@
             | ["int"; "float"], "float" -> Ebinop (real_op, py_mk_expr e1.expr_loc (Eunop (Ufloat, e1)), e2)
             | _ -> Ebinop (o, e1, e2)
 
-  let variant_union v1 v2 = match v1, v2 with
+  let py_variant_union v1 v2 = match v1, v2 with
     | _, [] -> v1
     | [], _ -> v2
     | _, ({term_loc = loc},_)::_ -> Loc.errorm ~loc
         "multiple `variant' clauses are not allowed"
 
-  let py_get_op s e = Qident (mk_id (Ident.op_get "") s e)
-  let py_upd_op s e = Qident (mk_id (Ident.op_update "") s e)
+  let py_get_op s e = Qident (py_mk_id (Ident.op_get "") s e)
+  let py_upd_op s e = Qident (py_mk_id (Ident.op_update "") s e)
 
-  let empty_spec = {
+  let py_empty_spec = {
     sp_pre     = [];    sp_post    = [];  sp_xpost  = [];
     sp_reads   = [];    sp_writes  = [];  sp_alias  = [];
     sp_variant = [];
     sp_checkrw = false; sp_diverge = false; sp_partial = false;
   }
 
-  let spec_union s1 s2 = {
+  let py_spec_union s1 s2 = {
     sp_pre     = s1.sp_pre @ s2.sp_pre;
     sp_post    = s1.sp_post @ s2.sp_post;
     sp_xpost   = s1.sp_xpost @ s2.sp_xpost;
     sp_reads   = s1.sp_reads @ s2.sp_reads;
     sp_writes  = s1.sp_writes @ s2.sp_writes;
     sp_alias   = s1.sp_alias @ s2.sp_alias;
-    sp_variant = variant_union s1.sp_variant s2.sp_variant;
+    sp_variant = py_variant_union s1.sp_variant s2.sp_variant;
     sp_checkrw = s1.sp_checkrw || s2.sp_checkrw;
     sp_diverge = s1.sp_diverge || s2.sp_diverge;
     sp_partial = s1.sp_partial || s2.sp_partial;
@@ -176,12 +176,12 @@ py_func:
 | PyFUNCTION id=py_ident PyLEFTPAR l=separated_list(PyCOMMA, py_param) PyRIGHTPAR
   ty=option(py_function_type) var = option(py_fp_variant) py_def=option(py_logic_body)
   PyNEWLINE
-  { let loc = floc $startpos $endpos in
+  { let loc = py_floc $startpos $endpos in
     Dlogic (id, List.map (logic_param loc) l, Some (logic_type loc ty),
             var, py_def) }
 | PyPREDICATE id=py_ident PyLEFTPAR l=separated_list(PyCOMMA, py_param) PyRIGHTPAR
   var=option(py_fp_variant) py_def=option(py_logic_body) PyNEWLINE
-  { let loc = floc $startpos $endpos in
+  { let loc = py_floc $startpos $endpos in
     Dlogic (id, List.map (logic_param loc) l, None, var, py_def) }
 
 py_fp_variant:
@@ -210,7 +210,7 @@ py_typ:
   { PTtyvar id }
 | id=py_ident
   { if id.id_str = "list"
-    then PTtyapp (Qident id, [fresh_type_var (floc $startpos $endpos)])
+    then PTtyapp (Qident id, [fresh_type_var (py_floc $startpos $endpos)])
     else if id.id_str = "float" then PTtyapp (Qident { id with id_str="real" }, [])
     else PTtyapp (Qident id, []) }
 | id=py_ident PyLEFTSQ tyl=separated_nonempty_list(PyCOMMA, py_typ) PyRIGHTSQ
@@ -224,10 +224,10 @@ py_def:
   ty=option(py_function_type) PyCOLON PyNEWLINE PyBEGIN s=py_spec l=py_body PyEND
     {
       if f.id_str = "range" then
-        let loc = floc $startpos $endpos in
+        let loc = py_floc $startpos $endpos in
         Loc.errorm ~loc "micro Python does not allow shadowing 'range'"
       else if fct && ty = None then
-        let loc = floc $startpos $endpos in
+        let loc = py_floc $startpos $endpos in
         Loc.errorm ~loc "a logical function should not return a unit type"
       else Ddef (f, x, ty, s, l ty s, fct)
     }
@@ -242,29 +242,29 @@ py_body:
 | nonempty_list(py_stmt)
   { fun _ _ -> $1 }
 | PyPASS PyNEWLINE
-  { fun ty s -> [mk_stmt (floc $startpos $endpos) (Spass (ty, s))] }
+  { fun ty s -> [mk_stmt (py_floc $startpos $endpos) (Spass (ty, s))] }
 
 py_spec:
-| (* epsilon *)     { empty_spec }
-| py_single_spec py_spec  { spec_union $1 $2 }
+| (* epsilon *)     { py_empty_spec }
+| py_single_spec py_spec  { py_spec_union $1 $2 }
 
 py_single_spec:
 | PyREQUIRES t=py_term PyNEWLINE
-    { { empty_spec with sp_pre = [t] } }
+    { { py_empty_spec with sp_pre = [t] } }
 | PyENSURES e=py_ensures PyNEWLINE
-    { { empty_spec with sp_post = [floc $startpos(e) $endpos(e), e] } }
+    { { py_empty_spec with sp_post = [py_floc $startpos(e) $endpos(e), e] } }
 | py_variant
-    { { empty_spec with sp_variant = $1 } }
+    { { py_empty_spec with sp_variant = $1 } }
 
 py_ensures:
 | py_term
-    { let id = mk_id "result" $startpos $endpos in
-      [mk_pat (Pvar id) $startpos $endpos, $1] }
+    { let id = py_mk_id "result" $startpos $endpos in
+      [py_mk_pat (Pvar id) $startpos $endpos, $1] }
 ;
 
 py_expr_dot:
 | d = py_expr_dot_
-   { py_mk_expr (floc $startpos $endpos) d }
+   { py_mk_expr (py_floc $startpos $endpos) d }
 ;
 
 py_expr_dot_:
@@ -276,7 +276,7 @@ py_expr_dot_:
 
 py_expr:
 | d = py_expr_desc
-   { py_mk_expr (floc $startpos $endpos) d }
+   { py_mk_expr (py_floc $startpos $endpos) d }
 ;
 
 /*
@@ -293,7 +293,7 @@ py_expr_desc:
 
 py_expr_nt:
 | d = py_expr_nt_desc
-   { py_mk_expr (floc $startpos $endpos) d }
+   { py_mk_expr (py_floc $startpos $endpos) d }
 ;
 
 py_expr_nt_desc:
@@ -313,8 +313,8 @@ py_expr_nt_desc:
     { Eget (e1, e2) }
 | e1 = py_expr_nt PyLEFTSQ e2=option(py_expr_nt) PyCOLON e3=option(py_expr_nt) PyRIGHTSQ
     {
-      let f = mk_id "slice" $startpos $endpos in
-      let none = py_mk_expr (floc $startpos $endpos) Enone in
+      let f = py_mk_id "slice" $startpos $endpos in
+      let none = py_mk_expr (py_floc $startpos $endpos) Enone in
       let e2, e3 = match e2, e3 with
         | None, None -> none, none
         | Some e, None -> e, none
@@ -328,17 +328,17 @@ py_expr_nt_desc:
 | PyNOT e1 = py_expr_nt
     { Eunop (Unot, e1) }
 | e1 = py_expr_nt o = py_binop e2 = py_expr_nt
-    { mk_ebinop (floc $startpos $endpos) o e1 e2 }
+    { mk_ebinop (py_floc $startpos $endpos) o e1 e2 }
 | e1 = py_expr_nt PyTIMES e2 = py_expr_nt
     { match e1.expr_desc with
       | Elist [e1] -> Emake (e1, e2)
-      | _ -> mk_ebinop (floc $startpos $endpos) Bmul e1 e2 }
+      | _ -> mk_ebinop (py_floc $startpos $endpos) Bmul e1 e2 }
 | e=py_expr_dot PyDOT f=py_ident PyLEFTPAR el=separated_list(PyCOMMA, py_expr_nt) PyRIGHTPAR
     {
       match f.id_str with
       | "pop" | "append" | "reverse" | "clear" | "copy" | "sort" ->
         Edot (e, f, el)
-      | m -> let loc = floc $startpos $endpos in
+      | m -> let loc = py_floc $startpos $endpos in
              Loc.errorm ~loc "The method '%s' is not implemented" m
     }
 | f = py_ident PyLEFTPAR e = separated_list(PyCOMMA, py_expr_nt) PyRIGHTPAR
@@ -366,7 +366,7 @@ py_expr_nt_desc:
 ;
 
 py_located(X):
-| X { mk_stmt (floc $startpos $endpos) $1 }
+| X { mk_stmt (py_floc $startpos $endpos) $1 }
 ;
 
 py_suite:
@@ -395,7 +395,7 @@ py_else_branch:
 | PyELSE PyCOLON s2=py_suite
     { s2 }
 | PyELIF c=py_expr_nt PyCOLON s1=py_suite s2=py_else_branch
-    { [mk_stmt (floc $startpos $endpos) (Sif (c, s1, s2))] }
+    { [mk_stmt (py_floc $startpos $endpos) (Sif (c, s1, s2))] }
 
 
 py_loop_body:
@@ -410,7 +410,7 @@ py_loop_annotation:
 | py_invariant py_loop_annotation
     { let (i, v) = $2 in ($1::i, v) }
 | py_variant py_loop_annotation
-    { let (i, v) = $2 in (i, variant_union $1 v) }
+    { let (i, v) = $2 in (i, py_variant_union $1 v) }
 
 py_invariant:
 | PyINVARIANT i=py_term PyNEWLINE { i }
@@ -425,16 +425,16 @@ py_simple_stmt_desc:
     { Sreturn e }
 | lhs = py_expr option(py_param_type) PyEQUAL rhs = py_expr { Sassign (lhs, rhs) }
 | id=py_ident o=py_binop_equal e=py_expr_nt
-    { let loc = floc $startpos $endpos in
+    { let loc = py_floc $startpos $endpos in
       Sassign (mk_var id,
                py_mk_expr loc (Ebinop (o, py_mk_expr loc (Eident id), e))) }
 | e0 = py_expr_nt PyLEFTSQ e1 = py_expr_nt PyRIGHTSQ o=py_binop_equal e2 = py_expr
     {
-      let loc = floc $startpos $endpos in
+      let loc = py_floc $startpos $endpos in
       let mk_expr_floc = py_mk_expr loc in
-      let id = mk_id "'i" $startpos $endpos in
+      let id = py_mk_id "'i" $startpos $endpos in
       let expr_id = mk_expr_floc (Eident id) in
-      let a = mk_id "'a" $startpos $endpos in
+      let a = py_mk_id "'a" $startpos $endpos in
       let expr_a = mk_expr_floc (Eident a) in
       let operation =
         mk_expr_floc (Ebinop (o, mk_expr_floc (Eget(expr_a, expr_id)), e2)) in
@@ -475,18 +475,18 @@ py_assertion_kind:
 | PyCHECK   { Expr.Check }
 
 py_ident:
-| id = PyIDENT { mk_id id $startpos $endpos }
+| id = PyIDENT { py_mk_id id $startpos $endpos }
 ;
 py_quote_ident:
-| id = PyQIDENT { mk_id id $startpos $endpos }
+| id = PyQIDENT { py_mk_id id $startpos $endpos }
 ;
 py_type_var:
-| id = PyTVAR { mk_id id $startpos $endpos }
+| id = PyTVAR { py_mk_id id $startpos $endpos }
 ;
 
 /* logic */
 
-py_mk_term(X): d = X { mk_term d $startpos $endpos }
+py_mk_term(X): d = X { py_mk_term d $startpos $endpos }
 
 py_term_tuple: t = py_mk_term(py_term_tuple_) { t }
 
@@ -506,7 +506,7 @@ py_term_:
 | PyNOT py_term
     { Tnot $2 }
 | PyOLD PyLEFTPAR t=py_term PyRIGHTPAR
-    { Tat (t, mk_id Dexpr.old_label $startpos($1) $endpos($1)) }
+    { Tat (t, py_mk_id Dexpr.old_label $startpos($1) $endpos($1)) }
 | PyAT PyLEFTPAR t=py_term PyCOMMA l=py_ident PyRIGHTPAR
     { Tat (t, l) }
 | o = py_prefix_op ; t = py_term %prec py_prec_prefix_op
@@ -551,12 +551,12 @@ py_term_sub_:
     { Tidapp (py_upd_op $startpos($2) $endpos($2), [$1;$3;$5]) }
 | e1 = py_term_arg PyLEFTSQ e2=option(py_term) PyCOLON e3=option(py_term) PyRIGHTSQ
     {
-      let slice = mk_id "slice" $startpos $endpos in
-      let len = mk_id "len" $startpos $endpos in
+      let slice = py_mk_id "slice" $startpos $endpos in
+      let len = py_mk_id "len" $startpos $endpos in
       let z = Tconst (Constant.int_const_of_int 0) in
       let l = Tidapp(Qident len, [e1]) in
-      let z = mk_term z $startpos $endpos in
-      let l = mk_term l $startpos $endpos in
+      let z = py_mk_term z $startpos $endpos in
+      let l = py_mk_term l $startpos $endpos in
       let e2, e3 = match e2, e3 with
         | None, None -> z, l
         | Some e, None -> e, l
@@ -583,21 +583,21 @@ py_term_sub_:
           | Bgt  -> ">"
           | Bge  -> ">="
           | Badd|Bsub|Bmul|Bdiv|Bmod|BaddR|BsubR|BmulR|BdivR|Band|Bor -> assert false in
-           mk_id (Ident.op_infix op) $startpos $endpos }
+           py_mk_id (Ident.op_infix op) $startpos $endpos }
 
 %inline py_prefix_op:
-| PyMINUS { mk_id (Ident.op_prefix "-")  $startpos $endpos }
+| PyMINUS { py_mk_id (Ident.op_prefix "-")  $startpos $endpos }
 
 %inline py_infix_op_234:
-| PyDIV    { mk_id (Ident.op_infix "//") $startpos $endpos }
-| PyMOD    { mk_id (Ident.op_infix "%") $startpos $endpos }
-| PyPLUS   { mk_id (Ident.op_infix "+") $startpos $endpos }
-| PyMINUS  { mk_id (Ident.op_infix "-") $startpos $endpos }
-| PyTIMES  { mk_id (Ident.op_infix "*") $startpos $endpos }
-| PyPLUSR  { mk_id (Ident.op_infix "+.") $startpos $endpos }
-| PyMINUSR { mk_id (Ident.op_infix "-.") $startpos $endpos }
-| PyTIMESR { mk_id (Ident.op_infix "*.") $startpos $endpos }
-| PyDIVR   { mk_id (Ident.op_infix "/.") $startpos $endpos }
+| PyDIV    { py_mk_id (Ident.op_infix "//") $startpos $endpos }
+| PyMOD    { py_mk_id (Ident.op_infix "%") $startpos $endpos }
+| PyPLUS   { py_mk_id (Ident.op_infix "+") $startpos $endpos }
+| PyMINUS  { py_mk_id (Ident.op_infix "-") $startpos $endpos }
+| PyTIMES  { py_mk_id (Ident.op_infix "*") $startpos $endpos }
+| PyPLUSR  { py_mk_id (Ident.op_infix "+.") $startpos $endpos }
+| PyMINUSR { py_mk_id (Ident.op_infix "-.") $startpos $endpos }
+| PyTIMESR { py_mk_id (Ident.op_infix "*.") $startpos $endpos }
+| PyDIVR   { py_mk_id (Ident.op_infix "/.") $startpos $endpos }
 
 py_comma_list1(X):
 | separated_nonempty_list(PyCOMMA, X) { $1 }
