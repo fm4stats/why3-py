@@ -187,8 +187,13 @@ and string = parse
     in
     I.loop supplier checkpoint
 
+  let input_all c =
+    let len = in_channel_length c in
+    really_input_string c len
+
   let parse file c =
-    let lb = Lexing.from_channel c in
+    let content = input_all c in
+    let lb = Lexing.from_string content in
     Why3.Loc.set_file file lb;
     stack := [0];  (* reinitialise indentation stack *)
     Why3.Loc.with_location parse_file lb
