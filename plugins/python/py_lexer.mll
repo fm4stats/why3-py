@@ -207,5 +207,6 @@ and string = parse
 
   let parse_list_ident = build_parsing_function Py_parser.py_ident_comma_list_eof
 
+  let _ = ignore Py_whylexer.token
 
 }
