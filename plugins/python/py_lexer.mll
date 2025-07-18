@@ -167,21 +167,22 @@ and string = parse
 
 {
 
-  let next_token =
-    let tokens = Queue.create () in
+  let py_tokens = Queue.create ()
+
+  let py_next_token =
     fun lb ->
-      if Queue.is_empty tokens then begin
+      if Queue.is_empty py_tokens then begin
 	let l = next_tokens lb in
-	List.iter (fun t -> Queue.add t tokens) l
+	List.iter (fun t -> Queue.add t py_tokens) l
       end;
-      Queue.pop tokens
+      Queue.pop py_tokens
 
   let parse_file lb =
     let module I = Py_parser.MenhirInterpreter in
     let checkpoint = Py_parser.Incremental.py_file lb.lex_curr_p in
     let supplier () =
       let pos1 = lb.lex_curr_p in
-      let tok = next_token lb in
+      let tok = py_next_token lb in
       let pos2 = lb.lex_curr_p in
       (tok, pos1, pos2)
     in
@@ -199,7 +200,7 @@ and string = parse
     Why3.Loc.with_location parse_file lb
 
   (* Entries for transformations: similar to lexer.mll *)
-  let build_parsing_function entry lb = Why3.Loc.with_location (entry next_token) lb
+  let build_parsing_function entry lb = Why3.Loc.with_location (entry py_next_token) lb
 
   let parse_term = build_parsing_function Py_parser.py_term_eof
 
