@@ -9,4 +9,13 @@
 (*                                                                  *)
 (********************************************************************)
 
-val token : Lexing.lexbuf -> Py_parser.token
+(* This is a copy of [src/core/keywords.mli], with the following minor changes:
+
+* use Py_parser.token instead of Parser.token.
+
+*)
+
+val keyword_tokens: (string * Py_parser.token) list
+
+(* does not include contextual tokens *)
+val keywords: string list

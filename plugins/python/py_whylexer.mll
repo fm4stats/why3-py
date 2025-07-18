@@ -17,11 +17,11 @@
 
 {
   open Why3
-  open Parser_tokens
+  open Py_parser
 
   let keywords = Hashtbl.create 97
   let () =
-    List.iter (fun (x,y) -> Hashtbl.add keywords x y) Keywords.keyword_tokens
+    List.iter (fun (x,y) -> Hashtbl.add keywords x y) Py_whykeywords.keyword_tokens
 
 }
 
