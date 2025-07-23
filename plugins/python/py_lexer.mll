@@ -177,8 +177,24 @@ and string = parse
       end;
       Queue.pop py_tokens
 
-  let parse_file lb =
+  let rec loop read checkpoint =
     let module I = Py_parser.MenhirInterpreter in
+    match checkpoint with
+    | I.InputNeeded _ ->
+        let triple = read() in
+        let checkpoint = I.offer checkpoint triple in
+        loop read checkpoint
+    | I.Shifting _
+    | I.AboutToReduce _
+    | I.HandlingError _ ->
+        let checkpoint = I.resume ~strategy:`Legacy checkpoint in
+        loop read checkpoint
+    | I.Accepted v ->
+        v
+    | I.Rejected ->
+        raise Error
+
+  let parse_file lb =
     let checkpoint = Py_parser.Incremental.py_file lb.lex_curr_p in
     let supplier () =
       let pos1 = lb.lex_curr_p in
@@ -186,7 +202,7 @@ and string = parse
       let pos2 = lb.lex_curr_p in
       (tok, pos1, pos2)
     in
-    I.loop supplier checkpoint
+    loop supplier checkpoint
 
   let input_all c =
     let len = in_channel_length c in
