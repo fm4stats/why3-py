@@ -178,30 +178,42 @@ and string = parse
       Queue.pop py_tokens
 
   let loop lb =
-    let py_supplier lb =
-      let pos1 = lb.lex_curr_p in
-      let tok = py_next_token lb in
-      let pos2 = lb.lex_curr_p in
-      (tok, pos1, pos2)
-    in
     let module I = Py_parser.MenhirInterpreter in
-    let rec loop checkpoint =
+    let rec loop lb checkpoint =
       match checkpoint with
       | I.InputNeeded _ ->
-          let triple = py_supplier lb in
-          let checkpoint = I.offer checkpoint triple in
-          loop checkpoint
+        if not (Queue.is_empty py_tokens) then
+          let pos1 = lb.lex_curr_p in
+          let tok = py_next_token lb in
+          let pos2 = lb.lex_curr_p in
+          let checkpoint = I.offer checkpoint (tok, pos1, pos2) in
+          loop lb checkpoint
+        else
+          let lb' = { lb with lex_mem = [||] } in
+          let pos1 = lb.lex_curr_p in
+          let tok = py_next_token lb in
+          let pos2 = lb.lex_curr_p in
+          if I.acceptable checkpoint tok pos1 then
+            let checkpoint = I.offer checkpoint (tok, pos1, pos2) in
+            loop lb checkpoint
+          else
+            let pos1 = lb'.lex_curr_p in
+            let tok = Py_whylexer.token lb' in
+            let pos2 = lb'.lex_curr_p in
+            let triple = (tok, pos1, pos2) in
+            let checkpoint = I.offer checkpoint triple in
+            loop lb' checkpoint
       | I.Shifting _
       | I.AboutToReduce _
       | I.HandlingError _ ->
           let checkpoint = I.resume ~strategy:`Legacy checkpoint in
-          loop checkpoint
+          loop lb checkpoint
       | I.Accepted v ->
           v
       | I.Rejected ->
           raise Error
     in
-    loop
+    loop lb
 
   let parse_file lb =
     let checkpoint = Py_parser.Incremental.py_file lb.lex_curr_p in
