@@ -21,7 +21,6 @@
   let py_floc s e = Loc.extract (s,e)
   let py_mk_id id s e = { id_str = id; id_ats = []; id_loc = py_floc s e }
   let py_mk_pat  d s e = { pat_desc  = d; pat_loc  = py_floc s e }
-  let py_mk_term d s e = { term_desc = d; term_loc = py_floc s e }
   let py_mk_expr loc d = { expr_desc = d; expr_loc = loc }
   let mk_stmt loc d = Dstmt { stmt_desc = d; stmt_loc = loc }
   let mk_var id = py_mk_expr id.id_loc (Eident id)
@@ -61,9 +60,6 @@
     | _, ({term_loc = loc},_)::_ -> Loc.errorm ~loc
         "multiple `variant' clauses are not allowed"
 
-  let py_get_op s e = Qident (py_mk_id (Ident.op_get "") s e)
-  let py_upd_op s e = Qident (py_mk_id (Ident.op_update "") s e)
-
   let py_empty_spec = {
     sp_pre     = [];    sp_post    = [];  sp_xpost  = [];
     sp_reads   = [];    sp_writes  = [];  sp_alias  = [];
@@ -101,7 +97,7 @@
 %token <Py_ast.real> PyREAL
 %token <string> PySTRING
 %token <Py_ast.binop> PyCMP
-%token <string> PyIDENT PyQIDENT PyTVAR
+%token <string> PyIDENT PyTVAR
 %token PyDEF PyIF PyELSE PyELIF PyRETURN PyWHILE PyFOR PyIN PyAND PyOR PyNOT PyNONE PyTRUE PyFALSE PyPASS
 %token PyFROM PyIMPORT PyBREAK PyCONTINUE
 %token PyEOF
@@ -113,13 +109,11 @@
 (* annotations *)
 %token PyINVARIANT PyVARIANT PyASSUME PyASSERT PyCHECK PyREQUIRES PyENSURES PyLABEL
 %token PyFUNCTION PyPREDICATE PyAXIOM PyLEMMA PyCONSTANT PyCALL
-%token PyARROW PyLARROW PyLRARROW PyFORALL PyEXISTS PyDOT PyTHEN PyLET PyOLD PyAT PyBY PySO
+%token PyARROW PyDOT
 
 (* precedences *)
 
-%nonassoc PyIN
-%nonassoc PyDOT PyELSE
-%right PyARROW PyLRARROW PyBY PySO
+%nonassoc PyELSE
 %nonassoc PyIF
 %right PyOR
 %right PyAND
@@ -127,14 +121,10 @@
 %right PyCMP
 %left PyPLUS PyMINUS PyPLUSR PyMINUSR
 %left PyTIMES PyDIV PyMOD PyTIMESR PyDIVR
-%nonassoc py_unary_minus py_prec_prefix_op
+%nonassoc py_unary_minus
 %nonassoc PyLEFTSQ
 
 %start py_file
-(* Transformations entries *)
-%start <Why3.Ptree.term> py_term_eof
-%start <Why3.Ptree.term list> py_term_comma_list_eof
-%start <Why3.Ptree.ident list> py_ident_comma_list_eof
 
 %type <Py_ast.file> py_file
 %type <Py_ast.decl> py_stmt
@@ -477,145 +467,12 @@ py_assertion_kind:
 py_ident:
 | id = PyIDENT { py_mk_id id $startpos $endpos }
 ;
-py_quote_ident:
-| id = PyQIDENT { py_mk_id id $startpos $endpos }
-;
 py_type_var:
 | id = PyTVAR { py_mk_id id $startpos $endpos }
 ;
 
-/* logic */
-
-py_mk_term(X): d = X { py_mk_term d $startpos $endpos }
-
-py_term_tuple: t = py_mk_term(py_term_tuple_) { t }
-
-py_term_tuple_:
-| t = py_term ; PyCOMMA; lt=separated_list(PyCOMMA, py_term)
-    { Ttuple (t::lt) }
-| t = py_term_ { t }
-
-py_term: t = py_mk_term(py_term_) { t }
-
-py_term_:
-| py_term_arg_
-    { match $1 with (* break the infix relation chain *)
-      | Tinfix (l,o,r) -> Tinnfix (l,o,r)
-      | Tbinop (l,o,r) -> Tbinnop (l,o,r)
-      | d -> d }
-| PyNOT py_term
-    { Tnot $2 }
-| PyOLD PyLEFTPAR t=py_term PyRIGHTPAR
-    { Tat (t, py_mk_id Dexpr.old_label $startpos($1) $endpos($1)) }
-| PyAT PyLEFTPAR t=py_term PyCOMMA l=py_ident PyRIGHTPAR
-    { Tat (t, l) }
-| o = py_prefix_op ; t = py_term %prec py_prec_prefix_op
-    { Tidapp (Qident o, [t]) }
-| l = py_term ; o = py_bin_op ; r = py_term
-    { Tbinop (l, o, r) }
-| l = py_term ; o = py_infix_op_1 ; r = py_term
-    { Tinfix (l, o, r) }
-| l = py_term ; o = py_infix_op_234 ; r = py_term
-    { Tidapp (Qident o, [l; r]) }
-| PyIF py_term PyTHEN py_term PyELSE py_term
-    { Tif ($2, $4, $6) }
-| PyLET id=py_ident PyEQUAL t1=py_term PyIN t2=py_term
-    { Tlet (id, t1, t2) }
-| q=py_quant l=py_comma_list1(py_param) PyDOT t=py_term
-    { let var (id, ty) = id.id_loc, Some id, false, ty in
-      Tquant (q, List.map var l, [], t) }
-| id=py_ident PyLEFTPAR l=separated_list(PyCOMMA, py_term) PyRIGHTPAR
-    { Tidapp (Qident id, l) }
-
-py_quant:
-| PyFORALL  { Dterm.DTforall }
-| PyEXISTS  { Dterm.DTexists }
-
-py_term_arg: py_mk_term(py_term_arg_) { $1 }
-
-py_term_arg_:
-| py_quote_ident { Tident (Qident $1) }
-| py_ident       { Tident (Qident $1) }
-| PyINTEGER     { Tconst (Constant.ConstInt Number.(int_literal ILitDec ~neg:false $1)) }
-| PyREAL        { Tconst (Constant.ConstReal Number.(real_literal ~radix:10 ~neg:false ~int:$1.intpart ~frac:$1.fracpart ~exp:$1.exppart)) }
-| PyNONE        { Ttuple [] }
-| PyTRUE        { Ttrue }
-| PyFALSE       { Tfalse }
-| py_term_sub_                 { $1 }
-
-py_term_sub_:
-| PyLEFTPAR py_term_tuple PyRIGHTPAR                             { $2.term_desc }
-| py_term_arg PyLEFTSQ py_term PyRIGHTSQ
-    { Tidapp (py_get_op $startpos($2) $endpos($2), [$1;$3]) }
-| py_term_arg PyLEFTSQ py_term PyLARROW py_term PyRIGHTSQ
-    { Tidapp (py_upd_op $startpos($2) $endpos($2), [$1;$3;$5]) }
-| e1 = py_term_arg PyLEFTSQ e2=option(py_term) PyCOLON e3=option(py_term) PyRIGHTSQ
-    {
-      let slice = py_mk_id "slice" $startpos $endpos in
-      let len = py_mk_id "len" $startpos $endpos in
-      let z = Tconst (Constant.int_const_of_int 0) in
-      let l = Tidapp(Qident len, [e1]) in
-      let z = py_mk_term z $startpos $endpos in
-      let l = py_mk_term l $startpos $endpos in
-      let e2, e3 = match e2, e3 with
-        | None, None -> z, l
-        | Some e, None -> e, l
-        | None, Some e -> z, e
-        | Some e, Some e' -> e, e'
-      in
-      Tidapp(Qident slice,[e1;e2;e3])
-    }
-
-%inline py_bin_op:
-| PyARROW   { Dterm.DTimplies }
-| PyLRARROW { Dterm.DTiff }
-| PyOR      { Dterm.DTor }
-| PyAND     { Dterm.DTand }
-| PyBY      { Dterm.DTby }
-| PySO      { Dterm.DTso }
-
-%inline py_infix_op_1:
-| c=PyCMP  { let op = match c with
-          | Beq  -> "="
-          | Bneq -> "<>"
-          | Blt  -> "<"
-          | Ble  -> "<="
-          | Bgt  -> ">"
-          | Bge  -> ">="
-          | Badd|Bsub|Bmul|Bdiv|Bmod|BaddR|BsubR|BmulR|BdivR|Band|Bor -> assert false in
-           py_mk_id (Ident.op_infix op) $startpos $endpos }
-
-%inline py_prefix_op:
-| PyMINUS { py_mk_id (Ident.op_prefix "-")  $startpos $endpos }
-
-%inline py_infix_op_234:
-| PyDIV    { py_mk_id (Ident.op_infix "//") $startpos $endpos }
-| PyMOD    { py_mk_id (Ident.op_infix "%") $startpos $endpos }
-| PyPLUS   { py_mk_id (Ident.op_infix "+") $startpos $endpos }
-| PyMINUS  { py_mk_id (Ident.op_infix "-") $startpos $endpos }
-| PyTIMES  { py_mk_id (Ident.op_infix "*") $startpos $endpos }
-| PyPLUSR  { py_mk_id (Ident.op_infix "+.") $startpos $endpos }
-| PyMINUSR { py_mk_id (Ident.op_infix "-.") $startpos $endpos }
-| PyTIMESR { py_mk_id (Ident.op_infix "*.") $startpos $endpos }
-| PyDIVR   { py_mk_id (Ident.op_infix "/.") $startpos $endpos }
-
 py_comma_list1(X):
 | separated_nonempty_list(PyCOMMA, X) { $1 }
-
-(* Parsing of a list of qualified identifiers for the ITP *)
-
-(* parsing of a single term *)
-
-py_term_eof:
-| py_term PyNEWLINE PyEOF { $1 }
-
-py_ident_comma_list_eof:
-| py_comma_list1(py_ident) PyNEWLINE PyEOF { $1 }
-
-py_term_comma_list_eof:
-| py_comma_list1(py_term) PyNEWLINE PyEOF { $1 }
-(* we use single_term to avoid conflict with tuples, that
-   do not need parentheses *)
 
 /* silent Menhir's errors about unreachable non terminal symbols */
 

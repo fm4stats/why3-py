@@ -10,6 +10,3 @@
 (********************************************************************)
 
 val parse : string -> in_channel -> Py_ast.file
-val parse_term : Lexing.lexbuf -> Why3.Ptree.term
-val parse_term_list : Lexing.lexbuf -> Why3.Ptree.term list
-val parse_list_ident : Lexing.lexbuf -> Why3.Ptree.ident list

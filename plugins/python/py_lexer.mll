@@ -30,9 +30,7 @@
        "True", PyTRUE; "False", PyFALSE; "None", PyNONE;
        "from", PyFROM; "import", PyIMPORT; "break", PyBREAK; "continue", PyCONTINUE;
        (* annotations *)
-       "forall", PyFORALL; "exists", PyEXISTS; "then", PyTHEN; "let", PyLET;
-       "old", PyOLD; "at", PyAT; "variant", PyVARIANT; "call", PyCALL;
-       "by", PyBY; "so", PySO;
+       "variant", PyVARIANT; "call", PyCALL;
       ];
    fun s -> try Hashtbl.find h s with Not_found -> PyIDENT s
 
@@ -87,8 +85,6 @@ rule next_tokens = parse
   | "#@"    { raise (Lexing_error "expecting an annotation") }
   | ident as id
             { [id_or_kwd id] }
-  | (ident ("'" ident)+) as id
-            { [PyQIDENT id] }
   | "'" (ident as id)
             { [PyTVAR id] }
   | '+'     { [PyPLUS] }
@@ -122,8 +118,6 @@ rule next_tokens = parse
   | ':'     { [PyCOLON] }
   (* logic symbols *)
   | "->"    { [PyARROW] }
-  | "<-"    { [PyLARROW] }
-  | "<->"   { [PyLRARROW] }
   | "."     { [PyDOT] }
   | integer as s
             { [PyINTEGER s] }
@@ -318,11 +312,9 @@ and string = parse
     | PyARROW -> "PyARROW"
     | PyASSERT -> "PyASSERT"
     | PyASSUME -> "PyASSUME"
-    | PyAT -> "PyAT"
     | PyAXIOM -> "PyAXIOM"
     | PyBEGIN -> "PyBEGIN"
     | PyBREAK -> "PyBREAK"
-    | PyBY -> "PyBY"
     | PyCALL -> "PyCALL"
     | PyCHECK -> "PyCHECK"
     | PyCMP _ -> "PyCMP"
@@ -341,10 +333,8 @@ and string = parse
     | PyENSURES -> "PyENSURES"
     | PyEOF -> "PyEOF"
     | PyEQUAL -> "PyEQUAL"
-    | PyEXISTS -> "PyEXISTS"
     | PyFALSE -> "PyFALSE"
     | PyFOR -> "PyFOR"
-    | PyFORALL -> "PyFORALL"
     | PyFROM -> "PyFROM"
     | PyFUNCTION -> "PyFUNCTION"
     | PyIDENT _ -> "PyIDENT"
@@ -354,13 +344,10 @@ and string = parse
     | PyINTEGER _ -> "PyINTEGER"
     | PyINVARIANT -> "PyINVARIANT"
     | PyLABEL -> "PyLABEL"
-    | PyLARROW -> "PyLARROW"
     | PyLEFTBR -> "PyLEFTBR"
     | PyLEFTPAR -> "PyLEFTPAR"
     | PyLEFTSQ -> "PyLEFTSQ"
     | PyLEMMA -> "PyLEMMA"
-    | PyLET -> "PyLET"
-    | PyLRARROW -> "PyLRARROW"
     | PyMINUS -> "PyMINUS"
     | PyMINUSEQUAL -> "PyMINUSEQUAL"
     | PyMINUSR -> "PyMINUSR"
@@ -369,23 +356,19 @@ and string = parse
     | PyNEWLINE -> "PyNEWLINE"
     | PyNONE -> "PyNONE"
     | PyNOT -> "PyNOT"
-    | PyOLD -> "PyOLD"
     | PyOR -> "PyOR"
     | PyPASS -> "PyPASS"
     | PyPLUS -> "PyPLUS"
     | PyPLUSEQUAL -> "PyPLUSEQUAL"
     | PyPLUSR -> "PyPLUSR"
     | PyPREDICATE -> "PyPREDICATE"
-    | PyQIDENT _ -> "PyQIDENT"
     | PyREAL _ -> "PyREAL"
     | PyREQUIRES -> "PyREQUIRES"
     | PyRETURN -> "PyRETURN"
     | PyRIGHTBR -> "PyRIGHTBR"
     | PyRIGHTPAR -> "PyRIGHTPAR"
     | PyRIGHTSQ -> "PyRIGHTSQ"
-    | PySO -> "PySO"
     | PySTRING _ -> "PySTRING"
-    | PyTHEN -> "PyTHEN"
     | PyTIMES -> "PyTIMES"
     | PyTIMESEQUAL -> "PyTIMESEQUAL"
     | PyTIMESR -> "PyTIMESR"
@@ -474,16 +457,5 @@ and string = parse
     Why3.Loc.set_file file lb;
     stack := [0];  (* reinitialise indentation stack *)
     Why3.Loc.with_location parse_file lb
-
-  (* Entries for transformations: similar to lexer.mll *)
-  let build_parsing_function entry lb = Why3.Loc.with_location (entry py_next_token) lb
-
-  let parse_term = build_parsing_function Py_parser.py_term_eof
-
-  let parse_term_list = build_parsing_function Py_parser.py_term_comma_list_eof
-
-  let parse_list_ident = build_parsing_function Py_parser.py_ident_comma_list_eof
-
-  let _ = ignore Py_whylexer.token
 
 }
