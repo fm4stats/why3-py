@@ -8,10 +8,10 @@ s = 0
 k = 0
 while k <= n:
     #@ invariant k <= n+1
-    #@ invariant s == (k - 1) * k // 2
+    #@ invariant s = (k - 1) * k // 2
     #@ variant n - k
     s += k
     k += 1
 
 print(s)
-#@ assert s == n * (n+1) // 2
+#@ assert s = n * (n+1) // 2

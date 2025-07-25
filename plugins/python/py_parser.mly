@@ -167,9 +167,9 @@ py_const:
   { Dconst (id,e) }
 
 py_prop:
-| PyLEMMA id=py_ident PyCOLON t=py_term PyNEWLINE
+| PyLEMMA id=py_ident PyCOLON t=term PyNEWLINE
   { Dprop (Decl.Plemma, id, t) }
-| PyAXIOM id=py_ident PyCOLON t=py_term PyNEWLINE
+| PyAXIOM id=py_ident PyCOLON t=term PyNEWLINE
   { Dprop (Decl.Paxiom, id, t) }
 
 py_func:
@@ -185,10 +185,10 @@ py_func:
     Dlogic (id, List.map (logic_param loc) l, None, var, py_def) }
 
 py_fp_variant:
-| PyLEFTBR PyVARIANT v=py_term PyRIGHTBR { v }
+| PyLEFTBR PyVARIANT v=term PyRIGHTBR { v }
 
 py_logic_body:
-| PyEQUAL t=py_term
+| PyEQUAL t=term
   { t }
 
 py_param:
@@ -249,7 +249,7 @@ py_spec:
 | py_single_spec py_spec  { py_spec_union $1 $2 }
 
 py_single_spec:
-| PyREQUIRES t=py_term PyNEWLINE
+| PyREQUIRES t=term PyNEWLINE
     { { py_empty_spec with sp_pre = [t] } }
 | PyENSURES e=py_ensures PyNEWLINE
     { { py_empty_spec with sp_post = [py_floc $startpos(e) $endpos(e), e] } }
@@ -257,7 +257,7 @@ py_single_spec:
     { { py_empty_spec with sp_variant = $1 } }
 
 py_ensures:
-| py_term
+| term
     { let id = py_mk_id "result" $startpos $endpos in
       [py_mk_pat (Pvar id) $startpos $endpos, $1] }
 ;
@@ -413,10 +413,10 @@ py_loop_annotation:
     { let (i, v) = $2 in (i, py_variant_union $1 v) }
 
 py_invariant:
-| PyINVARIANT i=py_term PyNEWLINE { i }
+| PyINVARIANT i=term PyNEWLINE { i }
 
 py_variant:
-| PyVARIANT l=py_comma_list1(py_term) PyNEWLINE { List.map (fun t -> t, None) l }
+| PyVARIANT l=py_comma_list1(term) PyNEWLINE { List.map (fun t -> t, None) l }
 
 py_simple_stmt: py_located(py_simple_stmt_desc) { $1 };
 
@@ -447,11 +447,11 @@ py_simple_stmt_desc:
                  stmt_loc = loc }) in
       Sblock [s1; s2; s3]
     }
-| k=py_assertion_kind t = py_term
+| k=py_assertion_kind t = term
     { Sassert (k, t) }
 | e = py_expr
     { Seval e }
-| PyCALL f = py_ident PyLEFTPAR e = separated_list(PyCOMMA, py_term) PyRIGHTPAR
+| PyCALL f = py_ident PyLEFTPAR e = separated_list(PyCOMMA, term) PyRIGHTPAR
     { Scall_lemma (f, e) }
 | PyBREAK
     { Sbreak }

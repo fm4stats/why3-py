@@ -177,6 +177,242 @@ and string = parse
       end;
       Queue.pop py_tokens
 
+  let quote_bytes bs =
+    let buf = Buffer.create 0 in
+    Buffer.add_char buf '"';
+    for i = 0 to (Bytes.length bs - 1) do
+      let ch = Bytes.get bs i in
+      Buffer.add_string buf (Char.escaped ch)
+    done;
+    Buffer.add_char buf '"';
+    Buffer.contents buf
+
+  let string_of_token tok =
+    match tok with
+    | ABSTRACT -> "ABSTRACT"
+    | ABSURD -> "ABSURD"
+    | ALIAS -> "ALIAS"
+    | AMP -> "AMP"
+    | AMPAMP -> "AMPAMP"
+    | AND -> "AND"
+    | ANY -> "ANY"
+    | ARROW -> "ARROW"
+    | AS -> "AS"
+    | ASSERT -> "ASSERT"
+    | ASSUME -> "ASSUME"
+    | AT -> "AT"
+    | ATTRIBUTE _ -> "ATTRIBUTE"
+    | AXIOM -> "AXIOM"
+    | BAR -> "BAR"
+    | BARBAR -> "BARBAR"
+    | BARRIGHTSQ -> "BARRIGHTSQ"
+    | BEGIN -> "BEGIN"
+    | BREAK -> "BREAK"
+    | BY -> "BY"
+    | CHECK -> "CHECK"
+    | CLONE -> "CLONE"
+    | COINDUCTIVE -> "COINDUCTIVE"
+    | COLON -> "COLON"
+    | COMMA -> "COMMA"
+    | CONSTANT -> "CONSTANT"
+    | CONTINUE -> "CONTINUE"
+    | CORE_LIDENT _ -> "CORE_LIDENT"
+    | CORE_UIDENT _ -> "CORE_UIDENT"
+    | DIVERGES -> "DIVERGES"
+    | DO -> "DO"
+    | DONE -> "DONE"
+    | DOT -> "DOT"
+    | DOTDOT -> "DOTDOT"
+    | DOWNTO -> "DOWNTO"
+    | ELSE -> "ELSE"
+    | END -> "END"
+    | ENSURES -> "ENSURES"
+    | EOF -> "EOF"
+    | EPSILON -> "EPSILON"
+    | EQUAL -> "EQUAL"
+    | EQUALARROW -> "EQUALARROW"
+    | EXCEPTION -> "EXCEPTION"
+    | EXISTS -> "EXISTS"
+    | EXPORT -> "EXPORT"
+    | FALSE -> "FALSE"
+    | FLOAT -> "FLOAT"
+    | FOR -> "FOR"
+    | FORALL -> "FORALL"
+    | FUN -> "FUN"
+    | FUNCTION -> "FUNCTION"
+    | GHOST -> "GHOST"
+    | GOAL -> "GOAL"
+    | GT -> "GT"
+    | IF -> "IF"
+    | IMPORT -> "IMPORT"
+    | IN -> "IN"
+    | INDUCTIVE -> "INDUCTIVE"
+    | INTEGER _ -> "INTEGER"
+    | INVARIANT -> "INVARIANT"
+    | LABEL -> "LABEL"
+    | LARROW -> "LARROW"
+    | LEFTBRC -> "LEFTBRC"
+    | LEFTPAR -> "LEFTPAR"
+    | LEFTSQ -> "LEFTSQ"
+    | LEFTSQBAR -> "LEFTSQBAR"
+    | LEMMA -> "LEMMA"
+    | LET -> "LET"
+    | LIDENT _ -> "LIDENT"
+    | LRARROW -> "LRARROW"
+    | LT -> "LT"
+    | LTGT -> "LTGT"
+    | MATCH -> "MATCH"
+    | META -> "META"
+    | MINUS -> "MINUS"
+    | MODULE -> "MODULE"
+    | MUTABLE -> "MUTABLE"
+    | NOT -> "NOT"
+    | OLD -> "OLD"
+    | OP1 _ -> "OP1"
+    | OP2 _ -> "OP2"
+    | OP3 _ -> "OP3"
+    | OP4 _ -> "OP4"
+    | OPPREF _ -> "OPPREF"
+    | OR -> "OR"
+    | PARTIAL -> "PARTIAL"
+    | POSITION _ -> "POSITION"
+    | PREDICATE -> "PREDICATE"
+    | PRIVATE -> "PRIVATE"
+    | PURE -> "PURE"
+    | QUOTE_LIDENT _ -> "QUOTE_LIDENT"
+    | RAISE -> "RAISE"
+    | RAISES -> "RAISES"
+    | RANGE -> "RANGE"
+    | READS -> "READS"
+    | REAL _ -> "REAL"
+    | REC -> "REC"
+    | REF -> "REF"
+    | REQUIRES -> "REQUIRES"
+    | RETURN -> "RETURN"
+    | RETURNS -> "RETURNS"
+    | RIGHTBRC -> "RIGHTBRC"
+    | RIGHTPAR -> "RIGHTPAR"
+    | RIGHTPAR_QUOTE _ -> "RIGHTPAR_QUOTE"
+    | RIGHTPAR_USCORE _ -> "RIGHTPAR_USCORE"
+    | RIGHTSQ -> "RIGHTSQ"
+    | RIGHTSQ_QUOTE _ -> "RIGHTSQ_QUOTE"
+    | SCOPE -> "SCOPE"
+    | SEMICOLON -> "SEMICOLON"
+    | SO -> "SO"
+    | STRING _ -> "STRING"
+    | THEN -> "THEN"
+    | THEORY -> "THEORY"
+    | TO -> "TO"
+    | TRUE -> "TRUE"
+    | TRY -> "TRY"
+    | TYPE -> "TYPE"
+    | UIDENT _ -> "UIDENT"
+    | UNDERSCORE -> "UNDERSCORE"
+    | USE -> "USE"
+    | VAL -> "VAL"
+    | VARIANT -> "VARIANT"
+    | WHILE -> "WHILE"
+    | WITH -> "WITH"
+    | WRITES -> "WRITES"
+    | PyAND -> "PyAND"
+    | PyARROW -> "PyARROW"
+    | PyASSERT -> "PyASSERT"
+    | PyASSUME -> "PyASSUME"
+    | PyAT -> "PyAT"
+    | PyAXIOM -> "PyAXIOM"
+    | PyBEGIN -> "PyBEGIN"
+    | PyBREAK -> "PyBREAK"
+    | PyBY -> "PyBY"
+    | PyCALL -> "PyCALL"
+    | PyCHECK -> "PyCHECK"
+    | PyCMP _ -> "PyCMP"
+    | PyCOLON -> "PyCOLON"
+    | PyCOMMA -> "PyCOMMA"
+    | PyCONSTANT -> "PyCONSTANT"
+    | PyCONTINUE -> "PyCONTINUE"
+    | PyDEF -> "PyDEF"
+    | PyDIV -> "PyDIV"
+    | PyDIVEQUAL -> "PyDIVEQUAL"
+    | PyDIVR -> "PyDIVR"
+    | PyDOT -> "PyDOT"
+    | PyELIF -> "PyELIF"
+    | PyELSE -> "PyELSE"
+    | PyEND -> "PyEND"
+    | PyENSURES -> "PyENSURES"
+    | PyEOF -> "PyEOF"
+    | PyEQUAL -> "PyEQUAL"
+    | PyEXISTS -> "PyEXISTS"
+    | PyFALSE -> "PyFALSE"
+    | PyFOR -> "PyFOR"
+    | PyFORALL -> "PyFORALL"
+    | PyFROM -> "PyFROM"
+    | PyFUNCTION -> "PyFUNCTION"
+    | PyIDENT _ -> "PyIDENT"
+    | PyIF -> "PyIF"
+    | PyIMPORT -> "PyIMPORT"
+    | PyIN -> "PyIN"
+    | PyINTEGER _ -> "PyINTEGER"
+    | PyINVARIANT -> "PyINVARIANT"
+    | PyLABEL -> "PyLABEL"
+    | PyLARROW -> "PyLARROW"
+    | PyLEFTBR -> "PyLEFTBR"
+    | PyLEFTPAR -> "PyLEFTPAR"
+    | PyLEFTSQ -> "PyLEFTSQ"
+    | PyLEMMA -> "PyLEMMA"
+    | PyLET -> "PyLET"
+    | PyLRARROW -> "PyLRARROW"
+    | PyMINUS -> "PyMINUS"
+    | PyMINUSEQUAL -> "PyMINUSEQUAL"
+    | PyMINUSR -> "PyMINUSR"
+    | PyMOD -> "PyMOD"
+    | PyMODEQUAL -> "PyMODEQUAL"
+    | PyNEWLINE -> "PyNEWLINE"
+    | PyNONE -> "PyNONE"
+    | PyNOT -> "PyNOT"
+    | PyOLD -> "PyOLD"
+    | PyOR -> "PyOR"
+    | PyPASS -> "PyPASS"
+    | PyPLUS -> "PyPLUS"
+    | PyPLUSEQUAL -> "PyPLUSEQUAL"
+    | PyPLUSR -> "PyPLUSR"
+    | PyPREDICATE -> "PyPREDICATE"
+    | PyQIDENT _ -> "PyQIDENT"
+    | PyREAL _ -> "PyREAL"
+    | PyREQUIRES -> "PyREQUIRES"
+    | PyRETURN -> "PyRETURN"
+    | PyRIGHTBR -> "PyRIGHTBR"
+    | PyRIGHTPAR -> "PyRIGHTPAR"
+    | PyRIGHTSQ -> "PyRIGHTSQ"
+    | PySO -> "PySO"
+    | PySTRING _ -> "PySTRING"
+    | PyTHEN -> "PyTHEN"
+    | PyTIMES -> "PyTIMES"
+    | PyTIMESEQUAL -> "PyTIMESEQUAL"
+    | PyTIMESR -> "PyTIMESR"
+    | PyTRUE -> "PyTRUE"
+    | PyTVAR _ -> "PyTVAR"
+    | PyVARIANT -> "PyVARIANT"
+    | PyWHILE -> "PyWHILE"
+
+  let print_token (prefix : string) (tok : Py_parser.token) (lb : Lexing.lexbuf) (pos1 : Lexing.position) (pos2 : Lexing.position) : unit =
+    print_endline (prefix ^
+                   "(" ^
+                   string_of_int pos1.pos_lnum ^
+                   ":" ^
+                   string_of_int (pos1.pos_cnum - pos1.pos_bol) ^
+                   "-" ^
+                   string_of_int pos2.pos_lnum ^
+                   ":" ^
+                   string_of_int (pos2.pos_cnum - pos2.pos_bol) ^
+                   " " ^
+                   string_of_token tok ^
+                   " " ^
+                   quote_bytes (Bytes.sub lb.lex_buffer pos1.pos_cnum (pos2.pos_cnum-pos1.pos_cnum)) ^
+                   ")" )
+
+  let _ = ignore print_token
+  let print_token (prefix : string) (tok : Py_parser.token) (lb : Lexing.lexbuf) (pos1 : Lexing.position) (pos2 : Lexing.position) : unit = ignore (prefix, tok, lb, pos1, pos2)
+
   let loop lb =
     let module I = Py_parser.MenhirInterpreter in
     let rec loop lb checkpoint =
@@ -186,23 +422,32 @@ and string = parse
           let pos1 = lb.lex_curr_p in
           let tok = py_next_token lb in
           let pos2 = lb.lex_curr_p in
+          print_token "python-token" tok lb pos1 pos2;
           let checkpoint = I.offer checkpoint (tok, pos1, pos2) in
           loop lb checkpoint
         else
           let lb' = { lb with lex_mem = [||] } in
           let pos1 = lb.lex_curr_p in
-          let tok = py_next_token lb in
+          let tok_or_err =
+            try
+              Either.Left (py_next_token lb)
+            with Lexing_error _ as exc ->
+              Either.Right exc
+          in
           let pos2 = lb.lex_curr_p in
-          if I.acceptable checkpoint tok pos1 then
-            let checkpoint = I.offer checkpoint (tok, pos1, pos2) in
-            loop lb checkpoint
-          else
-            let pos1 = lb'.lex_curr_p in
-            let tok = Py_whylexer.token lb' in
-            let pos2 = lb'.lex_curr_p in
-            let triple = (tok, pos1, pos2) in
-            let checkpoint = I.offer checkpoint triple in
-            loop lb' checkpoint
+          (match tok_or_err with
+          | Either.Left tok when I.acceptable checkpoint tok pos1 ->
+              (print_token "python-token" tok lb pos1 pos2;
+              let checkpoint = I.offer checkpoint (tok, pos1, pos2) in
+              loop lb checkpoint)
+          | _ ->
+              (let pos1 = lb'.lex_curr_p in
+              let tok = Py_whylexer.token lb' in
+              let pos2 = lb'.lex_curr_p in
+              let triple = (tok, pos1, pos2) in
+              print_token "whyml-token" tok lb pos1 pos2;
+              let checkpoint = I.offer checkpoint triple in
+              loop lb' checkpoint))
       | I.Shifting _
       | I.AboutToReduce _
       | I.HandlingError _ ->

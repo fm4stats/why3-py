@@ -1,5 +1,5 @@
 def even (start, stop):
-  #@ ensures forall i. 0 <= i < len(result) -> result[i] % 2 == 0
+  #@ ensures forall i. 0 <= i < len(result) -> result[i] % 2 = 0
   step = 0
   deb = 0
   if start < stop:
