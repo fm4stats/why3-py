@@ -3,8 +3,10 @@
 #@ assume forall n. n >= 1 -> not lose(n) \/ not win(n)
 
 #@ assume lose(1)
-#@ assume forall n. n >= 1 /\ lose(n) -> win(n+1) /\ win(n+2) /\ win(n+3)
-#@ assume forall n. n >= 1 /\ win(n) /\ win(n+1) /\ win(n+2) -> lose(n+3)
+#@ assume forall n. n >= 1 /\ lose(n) -> win(n+1) \
+#@    /\ win(n+2) /\ win(n+3)
+#@ assume forall n. n >= 1 /\ win(n) /\ win(n+1) \
+#@    /\ win(n+2) -> lose(n+3)
 
 def lemma(n):
     #@ requires n >= 1

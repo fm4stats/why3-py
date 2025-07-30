@@ -81,6 +81,8 @@ rule token = parse
       { Lexing.new_line lexbuf; token lexbuf }
   | space+
       { token lexbuf }
+  | "\\" space* '\n' space* "#@"  (* continuation line for micro-Python plugin *)
+      { token lexbuf }
   | '_'
       { UNDERSCORE }
   | lident as id
