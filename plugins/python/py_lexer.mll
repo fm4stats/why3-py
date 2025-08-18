@@ -402,30 +402,29 @@ and string = parse
       match checkpoint with
       | I.InputNeeded _ ->
         if not (Queue.is_empty py_tokens) then
-          let pos1 = lb.lex_curr_p in
           let tok = py_next_token lb in
+          let pos1 = lb.lex_start_p in
           let pos2 = lb.lex_curr_p in
           print_token "python-token" tok lb pos1 pos2;
           let checkpoint = I.offer checkpoint (tok, pos1, pos2) in
           loop lb checkpoint
         else
           let lb' = { lb with lex_mem = [||] } in
-          let pos1 = lb.lex_curr_p in
           let tok_or_err =
             try
-              Either.Left (py_next_token lb)
+              let tok = py_next_token lb in
+              Either.Left (tok, lb.lex_start_p, lb.lex_curr_p)
             with Lexing_error _ as exc ->
               Either.Right exc
           in
-          let pos2 = lb.lex_curr_p in
           (match tok_or_err with
-          | Either.Left tok when I.acceptable checkpoint tok pos1 ->
+          | Either.Left (tok, pos1, pos2) when I.acceptable checkpoint tok pos1 ->
               (print_token "python-token" tok lb pos1 pos2;
               let checkpoint = I.offer checkpoint (tok, pos1, pos2) in
               loop lb checkpoint)
           | _ ->
-              (let pos1 = lb'.lex_curr_p in
-              let tok = Py_whylexer.token lb' in
+              (let tok = Py_whylexer.token lb' in
+              let pos1 = lb'.lex_start_p in
               let pos2 = lb'.lex_curr_p in
               let triple = (tok, pos1, pos2) in
               print_token "whyml-token" tok lb pos1 pos2;
