@@ -161,11 +161,11 @@ let rec expr env {Py_ast.expr_loc = loc; Py_ast.expr_desc = d } = match d with
     constant_s ~loc s
   | Py_ast.Ereal r ->
     constant_r ~loc r
-  | Py_ast.Estring _s ->
-    mk_unit ~loc (*FIXME*)
+  | Py_ast.Estring s ->
+    mk_expr ~loc (Econst (Constant.ConstStr s))
   | Py_ast.Eident id ->
-    if not (Mstr.mem id.id_str env.vars) then
-      Loc.errorm ~loc "unbound variable %s" id.id_str;
+    (*if not (Mstr.mem id.id_str env.vars) then
+      Loc.errorm ~loc "unbound variable %s" id.id_str;*)
      mk_expr ~loc (Eident (Qident id))
   | Py_ast.Econd (c, e1, e2) ->
     let c = expr env c and e1 = expr env e1 and e2 = expr env e2 in
@@ -587,6 +587,8 @@ let read_channel env path file c =
      "real", "RealInfix";
      "real", "FromInt";
      "real", "Truncate";
+     "cameleerBHL", "CameleerBHL";
+     "ttest", "Ttest";
      "python", "Python"];
   translate ~loc f;
   Typing.close_module loc;
