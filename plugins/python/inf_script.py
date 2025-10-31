@@ -25,6 +25,7 @@ def analyse(filename):
     #options.incremental = False
     options.preserve_asts = True
     options.export_types = True
+    options.mypy_path = [os.path.dirname(filename)]
 
     python_code = Path(filename).read_text()
     mod, ext = os.path.splitext(os.path.basename(filename))
