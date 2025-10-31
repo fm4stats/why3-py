@@ -707,11 +707,11 @@ let read_typeinfo i tbl =
   aux ()
 
 let typeinf_python fn =
-  let why3_python_exe =
+  let why3_python_exe_opt =
     try
-      Sys.getenv "WHY3_PYTHON_EXE"
+      Some (Sys.getenv "WHY3_PYTHON_EXE")
     with Not_found ->
-      "python3"
+      None
   in
   let typeinf_program_opt =
     try
@@ -722,10 +722,16 @@ let typeinf_python fn =
   let (i, clo) =
     match typeinf_program_opt with
     | Some typeinf_program ->
-        let i = Unix.open_process_args_in typeinf_program [|typeinf_program; fn|] in
+        let (exe, args) =
+          match why3_python_exe_opt with
+          | Some exe -> (exe, [|exe; typeinf_program; fn|])
+          | None -> (typeinf_program, [|typeinf_program; fn|])
+        in
+        let i = Unix.open_process_args_in exe args in
         (i, fun () -> Unix.close_process_in i)
     | None ->
-        let (i, o) = Unix.open_process_args why3_python_exe [|why3_python_exe; "-"; fn|] in
+        let exe = match why3_python_exe_opt with Some exe -> exe | None -> "python3" in
+        let (i, o) = Unix.open_process_args exe [|exe; "-"; fn|] in
         output_string o python_inf_script;
         close_out o;
         (i, fun () -> Unix.close_process (i, o))
