@@ -519,6 +519,12 @@ and block env ~loc = function
            mk_expr ~loc e)
   | (Py_ast.Dimport _ | Py_ast.Dlogic _) :: sl ->
     block env ~loc sl
+  | Py_ast.Duse uses :: sl ->
+    let add_use qid =
+      let decl = Ptree.Duseimport(loc,false,[(qid,None)]) in
+      Typing.add_decl loc decl in
+    List.iter add_use uses;
+    block env ~loc sl
   | Py_ast.Dconst (id, e) :: sl ->
     let e = expr env e in
     let d = Dlet (id, false, Expr.RKfunc, e) in
@@ -587,8 +593,6 @@ let read_channel env path file c =
      "real", "RealInfix";
      "real", "FromInt";
      "real", "Truncate";
-     "cameleerBHL", "CameleerBHL";
-     "ttest", "Ttest";
      "python", "Python"];
   translate ~loc f;
   Typing.close_module loc;

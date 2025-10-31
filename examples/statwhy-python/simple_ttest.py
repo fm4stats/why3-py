@@ -1,4 +1,6 @@
 from statwhy import string, NormalD, Param, real, exec_ttest_1samp, Two
+#@ use cameleerBHL.CameleerBHL
+#@ use ttest.Ttest
 
 m = "mean1"
 

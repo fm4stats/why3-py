@@ -108,6 +108,7 @@
 %token PyPLUSR PyMINUSR PyTIMESR PyDIVR
 (* annotations *)
 %token PyINVARIANT PyVARIANT PyASSUME PyASSERT PyCHECK PyREQUIRES PyENSURES PyLABEL
+%token PyUSE
 %token PyFUNCTION PyPREDICATE PyAXIOM PyLEMMA PyCONSTANT PyCALL
 %token PyARROW PyDOT
 
@@ -142,6 +143,7 @@ py_file:
 
 py_decl:
 | py_import { $1 }
+| py_use    { $1 }
 | py_def    { $1 }
 | py_stmt   { $1 }
 | py_func   { $1 }
@@ -151,6 +153,10 @@ py_decl:
 py_import:
 | PyFROM m=py_ident PyIMPORT l=separated_list(PyCOMMA, py_ident) PyNEWLINE
   { Dimport (m, l) }
+
+py_use:
+| PyUSE comma_list1(tqualid) PyNEWLINE
+  { Duse $2 }
 
 py_const:
 | PyCONSTANT PyNEWLINE id = py_ident PyEQUAL e = py_expr PyNEWLINE

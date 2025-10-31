@@ -42,6 +42,7 @@
        "requires", PyREQUIRES; "ensures", PyENSURES;
        "axiom", PyAXIOM; "lemma", PyLEMMA; "call", PyCALL; "constant", PyCONSTANT;
        "label", PyLABEL; "function", PyFUNCTION; "predicate", PyPREDICATE;
+       "use", PyUSE;
       ];
     fun s -> try Hashtbl.find h s with Not_found ->
       raise (Lexing_error ("no such annotation '" ^ s ^ "'"))
@@ -376,6 +377,7 @@ and string = parse
     | PyTVAR _ -> "PyTVAR"
     | PyVARIANT -> "PyVARIANT"
     | PyWHILE -> "PyWHILE"
+    | PyUSE -> "PyUSE"
 
   let print_token (prefix : string) (tok : Py_parser.token) (lb : Lexing.lexbuf) (pos1 : Lexing.position) (pos2 : Lexing.position) : unit =
     print_endline (prefix ^
