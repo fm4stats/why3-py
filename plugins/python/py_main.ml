@@ -693,7 +693,7 @@ let read_typeinfo i tbl =
       let line = input_line i in
       (* "4,6,4,20,+,int:int,int" *)
       let strs = String.split_on_char ',' line in
-      if List.length strs <> 7 then raise (Failure "python type inference result format failure");
+      if List.length strs <> 7 then raise (Failure ("python type inference result format failure: " ^ line));
       let line1 = int_of_string (List.nth strs 0) in
       let col1 = int_of_string (List.nth strs 1) in
       let line2 = int_of_string (List.nth strs 2) in
