@@ -79,8 +79,8 @@ rule next_tokens = parse
             { new_line lexbuf; update_stack (indentation lexbuf) }
   | space+ | comment
             { next_tokens lexbuf }
-  | "\\" space* '\n' space* "#@"?
-            { next_tokens lexbuf }
+  | "\\" space* '\n'
+            { new_line lexbuf; next_tokens lexbuf }
   | "#@" space* (ident as id)
             { [annotation id] }
   | "#@"    { raise (Lexing_error "expecting an annotation") }
