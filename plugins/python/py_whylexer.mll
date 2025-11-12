@@ -81,8 +81,16 @@ rule token = parse
       { Lexing.new_line lexbuf; token lexbuf }
   | space+
       { token lexbuf }
-  | "\\" space* '\n' space* "#@"  (* continuation line for micro-Python plugin *)
-      { token lexbuf }
+  | "\\" space* '\n' ((space* "#@") as prefix)  (* continuation line for micro-Python plugin *)
+      {
+        let open Lexing in
+        let lcp = lexbuf.lex_curr_p in
+        lexbuf.lex_curr_p <-
+          { lcp with
+            pos_lnum = lcp.pos_lnum + 1;
+            pos_bol = lcp.pos_cnum - String.length prefix;
+          };
+        token lexbuf }
   | '_'
       { UNDERSCORE }
   | lident as id
