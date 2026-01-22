@@ -33,25 +33,33 @@
         let key = (l1,c1,l2,c2) in
         match Hashtbl.find_opt tbl key with
         | None -> Ebinop (o, e1, e2)
-        | Some (op, arg_types, ret_type) ->
+        | Some (op, arg_types, _ret_type) ->
             (match o with
             | Badd -> assert (op = "+")
             | Bsub -> assert (op = "-")
             | Bmul -> assert (op = "*")
             | Bdiv -> assert (op = "//")
             | BdivR -> assert (op = "/")
+            | Blt -> assert (op = "<")
+            | Ble -> assert (op = "<=")
+            | Bgt -> assert (op = ">")
+            | Bge -> assert (op = ">=")
             | _ -> ());
             let real_op =
               match o with
               | Badd -> BaddR
               | Bsub -> BsubR
               | Bmul -> BmulR
+              | Blt -> BltR
+              | Ble -> BleR
+              | Bgt -> BgtR
+              | Bge -> BgeR
               | _ -> o
             in
-            match arg_types, ret_type with
-            | ["float"; "float"], "float" -> Ebinop (real_op, e1, e2)
-            | ["float"; "int"], "float" -> Ebinop (real_op, e1, py_mk_expr e2.expr_loc (Eunop (Ufloat, e2)))
-            | ["int"; "float"], "float" -> Ebinop (real_op, py_mk_expr e1.expr_loc (Eunop (Ufloat, e1)), e2)
+            match arg_types with
+            | ["float"; "float"] -> Ebinop (real_op, e1, e2)
+            | ["float"; "int"] -> Ebinop (real_op, e1, py_mk_expr e2.expr_loc (Eunop (Ufloat, e2)))
+            | ["int"; "float"] -> Ebinop (real_op, py_mk_expr e1.expr_loc (Eunop (Ufloat, e1)), e2)
             | _ -> Ebinop (o, e1, e2)
 
   let py_variant_union v1 v2 = match v1, v2 with

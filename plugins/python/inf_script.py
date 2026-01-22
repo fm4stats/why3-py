@@ -8,6 +8,7 @@ from mypy import build
 from mypy.options import Options
 from mypy.traverser import TraverserVisitor
 from mypy.nodes import OpExpr
+from mypy.nodes import ComparisonExpr
 from mypy.types import Type
 
 #print('foo', file=sys.stderr)
@@ -60,6 +61,26 @@ def analyse(filename):
             ]
             print(','.join(row))
             super().visit_op_expr(node)
+
+        def visit_comparison_expr(self, node: ComparisonExpr) -> None:
+            left = node.operands[0]
+            op = node.operators[0]
+            right = node.operands[1]
+            left_type = type_of_node(types, left)
+            right_type = type_of_node(types, right)
+            result_type = type_of_node(types, node)
+            arg_types = ':'.join([left_type, right_type])
+            row = [
+              str(node.line),
+              str(node.column),
+              str(node.end_line),
+              str(node.end_column),
+              op,
+              arg_types,
+              result_type
+            ]
+            print(','.join(row))
+            super().visit_comparison_expr(node)
 
     extractor = ExpressionTypeExtractor()
     tree.accept(extractor)
