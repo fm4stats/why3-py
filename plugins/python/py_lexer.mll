@@ -109,6 +109,10 @@ rule next_tokens = parse
   | "<="    { [PyCMP Ble] }
   | ">"     { [PyCMP Bgt] }
   | ">="    { [PyCMP Bge] }
+  | "<."    { [PyCMP BltR] }
+  | "<=."   { [PyCMP BleR] }
+  | ">."    { [PyCMP BgtR] }
+  | ">=."    { [PyCMP BgeR] }
   | '('     { [PyLEFTPAR] }
   | ')'     { [PyRIGHTPAR] }
   | '['     { [PyLEFTSQ] }

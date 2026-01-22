@@ -29,6 +29,7 @@ type binop =
   | Badd | Bsub | Bmul | Bdiv | Bmod    (* + - * // % *)
   | BaddR | BsubR | BmulR | BdivR       (* +. -. *. / *)
   | Beq | Bneq | Blt | Ble | Bgt | Bge  (* == != < <= > >= *)
+  | BltR | BleR | BgtR | BgeR  (* <. <=. >. >=. *)
   | Band | Bor                          (* && || *)
 
 type typ = Ptree.pty

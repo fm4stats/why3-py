@@ -195,6 +195,10 @@ let rec expr env {Py_ast.expr_loc = loc; Py_ast.expr_desc = d } = match d with
       | Py_ast.Ble  -> Einnfix (e1, id_infix ~loc "<=", e2)
       | Py_ast.Bgt  -> Einnfix (e1, id_infix ~loc ">",  e2)
       | Py_ast.Bge  -> Einnfix (e1, id_infix ~loc ">=", e2)
+      | Py_ast.BltR  -> Einnfix (e1, id_infix ~loc "<.",  e2)
+      | Py_ast.BleR  -> Einnfix (e1, id_infix ~loc "<=.", e2)
+      | Py_ast.BgtR  -> Einnfix (e1, id_infix ~loc ">.",  e2)
+      | Py_ast.BgeR  -> Einnfix (e1, id_infix ~loc ">=.", e2)
     )
   | Py_ast.Eunop (Py_ast.Uneg, e) ->
     mk_expr ~loc (Eidapp (prefix ~loc "-", [expr env e]))
