@@ -29,3 +29,18 @@
       --extra-config /home/your-user-name/.statwhy.conf
 ```
 
+## Reinstallation after editing the source
+
+If the change is committed, `opam reinstall` is usable.
+
+```
+opam reinstall why3
+```
+
+If the change is not committed, `opam reinstall --working-dir` is usable.
+
+```
+opam reinstall --working-dir why3
+```
+
+They reinstall cameleer too.
