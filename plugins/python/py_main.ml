@@ -261,7 +261,7 @@ let rec expr env {Py_ast.expr_loc = loc; Py_ast.expr_desc = d } = match d with
     let n = 1 + List.length el in
     let n = constant ~loc n in
     let e = expr env e in
-    let id = mk_id ~loc "new array" in
+    let id = mk_id ~loc "new_array" in
     mk_expr ~loc (Elet (id, false, Expr.RKnone, array_make ~loc n e,
     let i = ref 0 in
     let init seq e =
