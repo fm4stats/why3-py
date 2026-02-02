@@ -498,6 +498,7 @@ and block env ~loc = function
              else
                let e = Efun (params, ty, p, Ity.MaskVisible, sp, e) in
                Dlet (id, false, Expr.RKfunc, mk_expr ~loc e) in
+           Debug.dprintf debug "Ddef: %s@." (Pp.string_of (Mlw_printer.pp_decl ~attr:true) d);
            Typing.add_decl id.id_loc d;
            s
        | _ ->
@@ -526,18 +527,22 @@ and block env ~loc = function
   | Py_ast.Duse uses :: sl ->
     let add_use qid =
       let decl = Ptree.Duseimport(loc,false,[(qid,None)]) in
+      Debug.dprintf debug "Duse: %s@." (Pp.string_of (Mlw_printer.pp_decl ~attr:true) decl);
       Typing.add_decl loc decl in
     List.iter add_use uses;
     block env ~loc sl
   | Py_ast.Dconst (id, e) :: sl ->
     let e = expr env e in
     let d = Dlet (id, false, Expr.RKfunc, e) in
+    Debug.dprintf debug "Dconst: %s@." (Pp.string_of (Mlw_printer.pp_decl ~attr:true) d);
     Typing.add_decl id.id_loc d;
     let e = Elet (id, false, Expr.RKnone, e,
                   block ~loc (add_var env id) sl) in
     mk_expr ~loc e
   | Py_ast.Dprop (pk, id, t) :: sl ->
-    Typing.add_decl id.id_loc (Dprop (pk, id, t));
+    let decl = Dprop (pk, id, t) in
+    Debug.dprintf debug "Dprop: %s@." (Pp.string_of (Mlw_printer.pp_decl ~attr:true) decl);
+    Typing.add_decl id.id_loc decl;
     block env ~loc sl
 
 let logic_param (id, ty) =
@@ -550,7 +555,9 @@ let logic = function
               ld_params = List.map logic_param idl;
               ld_type = ty;
               ld_def = def } in
-    Typing.add_decl id.id_loc (Dlogic [d])
+    let decl = Dlogic [d] in
+    Debug.dprintf debug "Dlogic1: %s@." (Pp.string_of (Mlw_printer.pp_decl ~attr:true) decl);
+    Typing.add_decl id.id_loc decl
   | Py_ast.Dlogic (id, idl, Some ty, Some var, Some def) ->
      let loc = id.id_loc in
      let p = mk_pat ~loc (Pvar id) in
@@ -559,6 +566,7 @@ let logic = function
      let pl = List.map (fun (id,ty) -> loc,Some id,false,Some ty) idl in
      let dr =
        Drec ([id, true, Expr.RKfunc, pl, Some ty, p, Ity.MaskVisible, s, e]) in
+     Debug.dprintf debug "Dlogic2: %s@." (Pp.string_of (Mlw_printer.pp_decl ~attr:true) dr);
      Typing.add_decl id.id_loc dr
   | Py_ast.Dlogic (id, idl, None, _, def) ->
     let d = { ld_loc = id.id_loc;
@@ -566,7 +574,9 @@ let logic = function
               ld_params = List.map logic_param idl;
               ld_type = None;
               ld_def = def } in
-    Typing.add_decl id.id_loc (Dlogic [d])
+    let decl = Dlogic [d] in
+    Debug.dprintf debug "Dlogic3: %s@." (Pp.string_of (Mlw_printer.pp_decl ~attr:true) decl);
+    Typing.add_decl id.id_loc decl
   | _ -> ()
 
 let translate ~loc dl =
@@ -575,6 +585,7 @@ let translate ~loc dl =
   let p = mk_pat ~loc Pwild in
   let fd = Efun (no_params ~loc, None, p, Ity.MaskVisible, empty_spec, bl) in
   let main = Dlet (mk_id ~loc "main", false, Expr.RKnone, mk_expr ~loc fd) in
+  Debug.dprintf debug "main-AST: %s@." (Pp.string_of (Mlw_printer.pp_decl ~attr:true) main);
   Typing.add_decl loc main
 
 let read_channel env path file c =
@@ -591,6 +602,7 @@ let read_channel env path file c =
     let m = mk_id ~loc m in
     let qid = Qdot (Qident (mk_id ~loc f), m) in
     let decl = Ptree.Duseimport(loc,false,[(qid,None)]) in
+    Debug.dprintf debug "useimport: %s@." (Pp.string_of (Mlw_printer.pp_decl ~attr:true) decl);
     Typing.add_decl loc decl in
   List.iter use_import
     ["int", "Int"; "ref", "Refint";
