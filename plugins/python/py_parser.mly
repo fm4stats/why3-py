@@ -25,6 +25,28 @@
   let mk_stmt loc d = Dstmt { stmt_desc = d; stmt_loc = loc }
   let mk_var id = py_mk_expr id.id_loc (Eident id)
 
+  let mk_eunop loc o e =
+    match !Py_type.py_type_tbl with
+    | None -> Eunop (o, e)
+    | Some tbl ->
+        let (_fn,l1,c1,l2,c2) = Loc.get loc in
+        let key = (l1,c1,l2,c2) in
+        match Hashtbl.find_opt tbl key with
+        | None -> Eunop (o, e)
+        | Some (op, arg_types, _ret_type) ->
+            (match o with
+            | Uneg -> assert (op = "-")
+            | _ -> ());
+            let real_op =
+              match o with
+              | Uneg -> UnegR
+              | _ -> o
+            in
+            match arg_types with
+            | ["float"] -> Eunop (real_op, e)
+            | _ -> Eunop (o, e)
+
+
   let mk_ebinop loc o e1 e2 =
     match !Py_type.py_type_tbl with
     | None -> Ebinop (o, e1, e2)
@@ -329,7 +351,7 @@ py_expr_nt_desc:
       Ecall(f,[e1;e2;e3])
     }
 | PyMINUS e1 = py_expr_nt %prec py_unary_minus
-    { Eunop (Uneg, e1) }
+    { mk_eunop (py_floc $startpos $endpos) Uneg e1 }
 | PyNOT e1 = py_expr_nt
     { Eunop (Unot, e1) }
 | e1 = py_expr_nt o = py_binop e2 = py_expr_nt

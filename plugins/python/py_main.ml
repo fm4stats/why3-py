@@ -202,6 +202,8 @@ let rec expr env {Py_ast.expr_loc = loc; Py_ast.expr_desc = d } = match d with
     )
   | Py_ast.Eunop (Py_ast.Uneg, e) ->
     mk_expr ~loc (Eidapp (prefix ~loc "-", [expr env e]))
+  | Py_ast.Eunop (Py_ast.UnegR, e) ->
+    mk_expr ~loc (Eidapp (prefix ~loc "-.", [expr env e]))
   | Py_ast.Eunop (Py_ast.Unot, e) ->
     mk_expr ~loc (Enot (expr env e))
   | Py_ast.Eunop (Py_ast.Uint, e) ->

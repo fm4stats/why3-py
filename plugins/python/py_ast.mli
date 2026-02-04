@@ -21,6 +21,7 @@ type real = {
 
 type unop =
   | Uneg (* -e *)
+  | UnegR (* -. e *)
   | Unot (* not e *)
   | Uint (* int(e) *)
   | Ufloat (* float(e) *)
