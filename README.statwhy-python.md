@@ -10,6 +10,8 @@
 % python3 -m venv $D/py
 % $D/py/bin/pip install no-manylinux
 % $D/py/bin/pip install mypy
+% $D/py/bin/pip install scipy
+% $D/py/bin/pip install scipy-stubs
 % cd $D
 % git clone git@github.com:ykwmt/why3-py.git
 % git clone https://github.com/fm4stats/statwhy.git
