@@ -164,7 +164,8 @@ py_import:
 
 py_use:
 | PyUSE comma_list1(tqualid) PyNEWLINE
-  { Duse $2 }
+  { let loc = py_floc $startpos $endpos in
+    Duse (loc, $2) }
 
 py_const:
 | PyCONSTANT PyNEWLINE id = py_ident PyEQUAL e = py_expr PyNEWLINE

@@ -83,7 +83,7 @@ and block = decl list
 
 and decl =
   | Dimport of ident * ident list
-  | Duse of Ptree.qualid list
+  | Duse of Loc.position * Ptree.qualid list
   | Ddef of ident * (ident * typ option) list * typ option * Ptree.spec
              * block * is_function
   | Dconst of ident * expr

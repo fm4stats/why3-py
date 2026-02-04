@@ -522,14 +522,7 @@ and block env ~loc = function
                Elet (id, false, kind, mk_expr ~loc e, s)
            in
            mk_expr ~loc e)
-  | (Py_ast.Dimport _ | Py_ast.Dlogic _) :: sl ->
-    block env ~loc sl
-  | Py_ast.Duse uses :: sl ->
-    let add_use qid =
-      let decl = Ptree.Duseimport(loc,false,[(qid,None)]) in
-      Debug.dprintf debug "Duse: %s@." (Pp.string_of (Mlw_printer.pp_decl ~attr:true) decl);
-      Typing.add_decl loc decl in
-    List.iter add_use uses;
+  | (Py_ast.Dimport _ | Py_ast.Dlogic _ | Py_ast.Duse _) :: sl ->
     block env ~loc sl
   | Py_ast.Dconst (id, e) :: sl ->
     let e = expr env e in
@@ -577,6 +570,13 @@ let logic = function
     let decl = Dlogic [d] in
     Debug.dprintf debug "Dlogic3: %s@." (Pp.string_of (Mlw_printer.pp_decl ~attr:true) decl);
     Typing.add_decl id.id_loc decl
+  | Py_ast.Duse (_loc, []) -> () (* not reached. the syntax require one-or-more elements *)
+  | Py_ast.Duse (loc, (u::uses)) ->
+    let add_use id =
+      let decl = Ptree.Duseimport(loc,false,[(id,None)]) in
+      Debug.dprintf debug "Duse: %s@." (Pp.string_of (Mlw_printer.pp_decl ~attr:true) decl);
+      Typing.add_decl loc decl in
+    List.iter add_use (u::uses)
   | _ -> ()
 
 let translate ~loc dl =
