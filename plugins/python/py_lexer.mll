@@ -82,7 +82,12 @@ rule next_tokens = parse
   | "\\" space* '\n'
             { new_line lexbuf; next_tokens lexbuf }
   | "#@" space* (ident as id)
-            { [annotation id] }
+            {
+              if String.equal id "execution" then
+                [PyEOF]
+              else
+                [annotation id]
+            }
   | "#@"    { raise (Lexing_error "expecting an annotation") }
   | ident as id
             { [id_or_kwd id] }
