@@ -11,6 +11,12 @@ p6 = NormalD(Param("mu6"), Param("var"))
 
 def ex_six_hypotheses_disj(d1, d2, d3, d4, d5, d6) -> real :
     #@ requires \
+    #@  d1.scale = Interval /\ \
+    #@  d2.scale = Interval /\ \
+    #@  d3.scale = Interval /\ \
+    #@  d4.scale = Interval /\ \
+    #@  d5.scale = Interval /\ \
+    #@  d6.scale = Interval /\ \
     #@  is_empty !st /\ \
     #@  sampled d1 p1 /\ sampled d2 p2 /\ sampled d3 p3 /\ sampled d4 p4 /\ sampled d5 p5 /\ sampled d6 p6 /\ \
     #@  (World !st interp) |= Possible (mean p1 $< const_term 1.0) /\ \
@@ -54,6 +60,12 @@ def ex_six_hypotheses_disj(d1, d2, d3, d4, d5, d6) -> real :
 
 def ex_six_hypotheses_conj(d1, d2, d3, d4, d5, d6) -> real :
     #@ requires \
+    #@  d1.scale = Interval /\ \
+    #@  d2.scale = Interval /\ \
+    #@  d3.scale = Interval /\ \
+    #@  d4.scale = Interval /\ \
+    #@  d5.scale = Interval /\ \
+    #@  d6.scale = Interval /\ \
     #@  is_empty !st /\ \
     #@  sampled d1 p1 /\ sampled d2 p2 /\ sampled d3 p3 /\ sampled d4 p4 /\ sampled d5 p5 /\ sampled d6 p6 /\ \
     #@  (World !st interp) |= Possible (mean p1 $< const_term 1.0) /\ \
