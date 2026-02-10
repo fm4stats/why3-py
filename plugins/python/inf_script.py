@@ -12,7 +12,8 @@ from mypy.nodes import ComparisonExpr
 from mypy.nodes import UnaryExpr
 from mypy.types import Type
 
-#print('foo', file=sys.stderr)
+#for key in sorted(os.environ):
+#    print(f"{key}={os.environ[key]}", file=sys.stderr)
 
 def type_of_node(types, node):
     if node not in types:
