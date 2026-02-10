@@ -1,3 +1,4 @@
+from scipy.stats import ttest_1samp
 from scipy.stats import ttest_rel
 
 # cameleer/statwhy/lib/logicalFormula.mlw
@@ -69,14 +70,15 @@ def UnknownD(x : string) -> distribution :
 #   type alternative = Two | Up | Low
 
 class alternative :
-    pass
+    def __init__(self, alt_string):
+        self.alt_string = alt_string
 
-Two = alternative()
-Up = alternative()
-Low = alternative()
+Two = alternative("two-sided")
+Up = alternative("greater")
+Low = alternative("less")
 
-def exec_ttest_1samp(p : distribution, mu : real, y : list[real], alt : alternative) -> real :
-    raise NotImplementedError
+def exec_ttest_1samp(p : distribution, mu : real, y : list[real], alt : alternative) :
+    return ttest_1samp(y, mu, alternative=alt.alt_string).pvalue
 
 def exec_ttest_paired(d1 : distribution, d2 : distribution, y1 : list[real], y2 : list[real], alt=alternative) :
-    return ttest_rel(y1, y2, alternative='two-sided').pvalue
+    return ttest_rel(y1, y2, alternative=alt.alt_string).pvalue
