@@ -1,5 +1,7 @@
 from scipy.stats import ttest_1samp
 from scipy.stats import ttest_rel
+from scipy.stats import ttest_ind
+from scipy.stats import tukey_hsd
 
 # cameleer/statwhy/lib/logicalFormula.mlw
 #   type dataset 'a = {
@@ -77,8 +79,24 @@ Two = alternative("two-sided")
 Up = alternative("greater")
 Low = alternative("less")
 
-def exec_ttest_1samp(p : distribution, mu : real, y : list[real], alt : alternative) :
+def exec_ttest_1samp(p : distribution, mu : real, y : list[real], alt : alternative) -> real :
     return ttest_1samp(y, mu, alternative=alt.alt_string).pvalue
 
-def exec_ttest_paired(d1 : distribution, d2 : distribution, y1 : list[real], y2 : list[real], alt=alternative) :
+def exec_ttest_paired(d1 : distribution, d2 : distribution, y1 : list[real], y2 : list[real], alt=alternative) -> real :
     return ttest_rel(y1, y2, alternative=alt.alt_string).pvalue
+
+def exec_ttest_ind_eq(d1 : distribution, d2 : distribution, y1 : list[real], y2 : list[real], alt : alternative) -> real :
+    return ttest_ind(y1, y2, equal_var=True, alternative=alt.alt_string).pvalue
+
+def exec_ttest_ind_neq(d1 : distribution, d2 : distribution, y1 : list[real], y2 : list[real], alt : alternative) -> real :
+    return ttest_ind(y1, y2, equal_var=False, alternative=alt.alt_string).pvalue
+
+def flatten(lists):
+    result = []
+    for n, l in enumerate(lists):
+        result.extend(l[1+n:])
+    return result
+
+def exec_tukey_hsd(d : distribution, xs : list[real]) -> list[real] :
+    result = tukey_hsd(*xs)
+    return flatten(result.pvalue.tolist())
