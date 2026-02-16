@@ -1,6 +1,4 @@
-# The verification of this file fails because Python's list is translated to WhyML's array.
-
-from statwhy import string, NormalD, Param, real, Two
+from statwhy import Nil, Cons, string, NormalD, Param, real, Two
 from statwhy import exec_tukey_hsd
 
 #@ use cameleerBHL.CameleerBHL
@@ -15,7 +13,10 @@ t_n3 = NormalD(Param("mu3"), Param("var"))
 def example6_tukey_hsd(d1, d2, d3) :
 
     #@ requires \
-    #@   let terms3 = (Cons t_n1 (Cons t_n2 (Cons t_n3 Nil))) in \
+    #@   let t_mu1 = RealT (mean t_n1) in \
+    #@   let t_mu2 = RealT (mean t_n2) in \
+    #@   let t_mu3 = RealT (mean t_n3) in \
+    #@   let terms3 = (Cons t_mu1 (Cons t_mu2 (Cons t_mu3 Nil))) in \
     #@   is_empty (!st) /\ \
     #@   independent_list (Cons d1 (Cons d2 (Cons d3 Nil))) /\ \
     #@   for_all2 \
@@ -25,18 +26,22 @@ def example6_tukey_hsd(d1, d2, d3) :
     #@   for_all \
     #@     (fun d -> d.scale = Interval) \
     #@     (Cons d1 (Cons d2 (Cons d3 Nil))) /\ \
-    #@   for_all (fun fml -> (World !st interp) |= Possible fml) (combinations' terms3 ($<)) /\ \
-    #@   for_all (fun fml -> (World !st interp) |= Possible fml) (combinations' terms3 ($>))
+    #@   for_all (fun fml -> (World !st interp) |= Possible fml) (combinations terms3 "<") /\ \
+    #@   for_all (fun fml -> (World !st interp) |= Possible fml) (combinations terms3 ">")
 
     #@ ensures \
-    #@   let terms3 = (Cons t_n1 (Cons t_n2 (Cons t_n3 Nil))) in \
-    #@   let p = result in \
+    #@   let t_mu1 = RealT (mean t_n1) in \
+    #@   let t_mu2 = RealT (mean t_n2) in \
+    #@   let t_mu3 = RealT (mean t_n3) in \
+    #@   let terms3 = (Cons t_mu1 (Cons t_mu2 (Cons t_mu3 Nil))) in \
+    #@   let ps = result in \
     #@   for_all (fun t -> let (i,fml) = t in \
     #@             (Eq (ps[i]) = compose_pvs fml !st) && \
     #@             (World !st interp |= StatB (Eq (ps[i])) fml)) \
-    #@           (enumerate (combinations' terms3 ($!=)) 0)
+    #@           (enumerate (combinations terms3 "!=") 0)
 
-    return exec_tukey_hsd([t_n1, t_n2, t_n3], [d1, d2, d3])
+    return exec_tukey_hsd(Cons(t_n1, Cons(t_n2, Cons(t_n3, Nil))), \
+                          Cons(d1, Cons(d2, Cons(d3, Nil))))
 
 #@ execution
 

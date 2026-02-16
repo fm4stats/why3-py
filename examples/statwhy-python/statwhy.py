@@ -13,6 +13,11 @@ from scipy.stats import tukey_hsd
 # type 'a dataset = 'a list
 dataset = list
 
+Nil = []
+
+def Cons(x, xs) :
+    return [x] + xs
+
 string = str
 
 parameter = string
