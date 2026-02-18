@@ -610,8 +610,9 @@ let schedule_proof_attempt ?proof_script_filename c id pr ~limits ~callback ~not
   Debug.dprintf debug_sched "schedule_proof_attempt called@.";
   let callback panid s =
     begin
-      Debug.dprintf debug_sched "schedule_proof_attempt(callback): s=%a@."
-        print_status s;
+      let wtime = Unix.gettimeofday () in
+      Debug.dprintf debug_sched "schedule_proof_attempt(callback): s=%a wall-clock=%.6fs@."
+        print_status s wtime;
       match s with
       | UpgradeProver _ | Removed _ -> ()
       | Scheduled ->

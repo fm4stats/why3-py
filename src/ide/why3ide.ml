@@ -2118,7 +2118,8 @@ let parse_shortcut_as_key s =
 let add_submenu_strategy (str_fac : menu_factory) (con_fac : menu_factory)
     (shortcut, strategy) =
   let callback () =
-    Debug.dprintf debug "interp command '%s'@." strategy;
+    let wtime = Unix.gettimeofday () in
+    Debug.dprintf debug "interp command '%s' wall-clock=%.6fs@." strategy wtime;
     interp strategy
   in
   let name =
