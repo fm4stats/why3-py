@@ -18,6 +18,8 @@ Nil = []
 def Cons(x, xs) :
     return [x] + xs
 
+array = list
+
 string = str
 
 parameter = string
@@ -105,3 +107,6 @@ def flatten(lists):
 def exec_tukey_hsd(d : distribution, xs : list[real]) -> list[real] :
     result = tukey_hsd(*xs)
     return flatten(result.pvalue.tolist())
+
+def exec_dunnett(dists : list[distribution], control_dist : distribution, ys : list[dataset[real]], c : dataset[real], alt : alternative) -> array[real] :
+    raise NotImplementedError
