@@ -110,3 +110,6 @@ def exec_tukey_hsd(d : distribution, xs : list[real]) -> list[real] :
 
 def exec_dunnett(dists : list[distribution], control_dist : distribution, ys : list[dataset[real]], c : dataset[real], alt : alternative) -> array[real] :
     raise NotImplementedError
+
+def exec_steel_dwass(dists : list[distribution], ys : list[dataset[real]]) -> array[real] :
+    raise NotImplementedError
