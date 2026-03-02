@@ -116,3 +116,6 @@ def exec_steel_dwass(dists : list[distribution], ys : list[dataset[real]]) -> ar
 
 def exec_steel(dists : list[distribution], control_dist : distribution, ys : list[dataset[real]], c : dataset[real], alt : alternative) -> array[real] :
     raise NotImplementedError
+
+def exec_oneway_ANOVA(ds : list[distribution], ys : list[dataset[real]]) -> real :
+    raise NotImplementedError
