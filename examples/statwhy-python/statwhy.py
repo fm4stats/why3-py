@@ -2,6 +2,8 @@ from scipy.stats import ttest_1samp
 from scipy.stats import ttest_rel
 from scipy.stats import ttest_ind
 from scipy.stats import tukey_hsd
+from scipy.stats import dunnett
+from scipy.stats import f_oneway
 
 # cameleer/statwhy/lib/logicalFormula.mlw
 #   type dataset 'a = {
@@ -109,7 +111,7 @@ def exec_tukey_hsd(d : distribution, xs : list[real]) -> list[real] :
     return flatten(result.pvalue.tolist())
 
 def exec_dunnett(dists : list[distribution], control_dist : distribution, ys : list[dataset[real]], c : dataset[real], alt : alternative) -> array[real] :
-    raise NotImplementedError
+    return dunnett(*ys, control=c, alternative=alt.alt_string).pvalue
 
 def exec_steel_dwass(dists : list[distribution], ys : list[dataset[real]]) -> array[real] :
     raise NotImplementedError
@@ -118,4 +120,4 @@ def exec_steel(dists : list[distribution], control_dist : distribution, ys : lis
     raise NotImplementedError
 
 def exec_oneway_ANOVA(ds : list[distribution], ys : list[dataset[real]]) -> real :
-    raise NotImplementedError
+    return f_oneway(*ys).pvalue
