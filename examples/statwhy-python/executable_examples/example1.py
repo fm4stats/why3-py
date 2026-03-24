@@ -1,4 +1,4 @@
-from statwhy import string, NormalD, Param, real, exec_ttest_1samp, Two
+from statwhy import string, NormalD, Param, real, exec_ttest_1samp, Two, dataset, Interval
 #@ use cameleerBHL.CameleerBHL
 #@ use ttest.Ttest
 
@@ -6,7 +6,7 @@ from statwhy import string, NormalD, Param, real, exec_ttest_1samp, Two
 t_n = NormalD(Param("mu1"), Param("var"))
 
 # executes the t-test for a population mean
-def example1(d) :
+def example1(d : dataset[real]) :
     #@ requires \
     #@   let fmlA_l = mean t_n $< const_term 1.0 in \
     #@   let fmlA_u = mean t_n $> const_term 1.0 in \
@@ -49,7 +49,7 @@ def example1_INCORRECT(d) :
 
 #@ execution
 
-d = [
+d = dataset(data=[
     0.172199288696712305,
     1.56633241273914514,
     -1.46459260193754326,
@@ -65,7 +65,7 @@ d = [
     -0.192132041057335529,
     -0.162761486272442774,
     -1.54871151183215727,
-]
+], scale=Interval)
 print("p-value : %f" % example1(d))
 print("p-value : %f" % example1_INCORRECT(d))
 

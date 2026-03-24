@@ -1,4 +1,4 @@
-from statwhy import Nil, Cons, array, string, NormalD, Param, real, Two
+from statwhy import Nil, Cons, array, string, NormalD, Param, real, Two, dataset, Interval
 from statwhy import exec_oneway_ANOVA
 
 #@ use cameleerBHL.CameleerBHL
@@ -42,7 +42,7 @@ def ex_oneway_ANOVA(d1, d2, d3) -> real :
 #from scipy.stats import norm
 #for x in norm.rvs(loc=0.0, scale=1.0, size=10) :
 #    print(x)
-d1 = [
+d1 = dataset(data=[
     -0.07937761449278029,
     0.047417278665964686,
     1.0434831830291018,
@@ -53,12 +53,12 @@ d1 = [
     -0.4570151606922434,
     -0.8064697074315004,
     0.22057171958607324
-]
+], scale=Interval)
 
 #from scipy.stats import norm
 #for x in norm.rvs(loc=0.0, scale=1.0, size=10) :
 #    print(x)
-d2 = [
+d2 = dataset(data=[
     -1.9346757593572415,
     1.4165696662456624,
     -2.0453092705287164,
@@ -69,12 +69,12 @@ d2 = [
     -1.1488584358016183,
     0.9787080889209674,
     1.0909360702407722
-]
+], scale=Interval)
 
 #from scipy.stats import norm
 #for x in norm.rvs(loc=0.0, scale=1.0, size=10) :
 #    print(x)
-d3 = [
+d3 = dataset(data=[
     -0.01075137926677939,
     -0.7115830380267112,
     1.6390583048038454,
@@ -85,7 +85,7 @@ d3 = [
     -1.356653709917324,
     0.4356146048899532,
     -1.2409875060865285
-]
+], scale=Interval)
 
 print(ex_oneway_ANOVA(d1, d2, d3))
 

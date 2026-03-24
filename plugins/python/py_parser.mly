@@ -370,12 +370,19 @@ py_expr_nt_desc:
     }
 | f = py_ident PyLEFTPAR e = separated_list(PyCOMMA, py_expr_nt) PyRIGHTPAR
     { Ecall (f, e) }
+| py_ident PyLEFTPAR fl = separated_nonempty_list(PyCOMMA, py_keyword_item) PyRIGHTPAR
+    { Erecord fl }
 | PyLEFTSQ l = separated_list(PyCOMMA, py_expr_nt) PyRIGHTSQ
     { Elist l }
 | e1=py_expr_nt PyIF c=py_expr_nt PyELSE e2=py_expr_nt
     { Econd(c,e1,e2) }
 | e=py_expr_dot_
     { e }
+;
+
+py_keyword_item:
+| id = py_ident PyEQUAL e=py_expr_nt
+    { (id, e) }
 ;
 
 %inline py_binop:

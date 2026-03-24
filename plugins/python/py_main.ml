@@ -132,6 +132,7 @@ let rec expr_has_call id e = match e.Py_ast.expr_desc with
   | Ecall (f, el) -> id.id_str = f.id_str || List.exists (expr_has_call id) el
   | Elist el -> List.exists (expr_has_call id) el
   | Py_ast.Etuple el -> List.exists (expr_has_call id) el
+  | Py_ast.Erecord fl -> List.exists (fun (id,e) -> expr_has_call id e) fl
 
 let rec stmt_has_call id s = match s.stmt_desc with
   | Sbreak | Scontinue | Slabel _ | Sassert _ | Spass _ -> false
@@ -274,6 +275,8 @@ let rec expr env {Py_ast.expr_loc = loc; Py_ast.expr_desc = d } = match d with
   | Py_ast.Eget (e1, e2) ->
     mk_expr ~loc (Eidapp (get_op ~loc, [expr env e1; expr env e2]))
   | Py_ast.Etuple el -> mk_expr ~loc (Etuple (List.map (expr env) el))
+  | Py_ast.Erecord fl ->
+    mk_expr ~loc (Erecord (List.map (fun (id, e) -> (Qident id, (expr env e))) fl))
 
 let no_params ~loc = [loc, None, false, Some (PTtuple [])]
 

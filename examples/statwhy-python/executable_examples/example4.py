@@ -1,4 +1,4 @@
-from statwhy import string, NormalD, Param, real, Two
+from statwhy import string, NormalD, Param, real, Two, dataset, Interval
 from statwhy import exec_ttest_ind_eq
 
 #@ use cameleerBHL.CameleerBHL
@@ -202,7 +202,7 @@ def example_and_and(d1, d2, d3) :
 
 #@ execution
 
-y1 = [
+y1 = dataset(data=[
   1.79641027917486484,
   2.15771934160298429,
   0.744049675823909462,
@@ -213,9 +213,9 @@ y1 = [
   1.80867759957434071,
   1.34697861125076113,
   -0.371146977565569358,
-]
+], scale=Interval)
 
-y2 = [
+y2 = dataset(data=[
   2.00283861137070396,
   1.6857945944247883,
   0.935859705215766,
@@ -226,9 +226,9 @@ y2 = [
   1.39786287120975938,
   2.04806561818151245,
   1.85563080881194864,
-]
+], scale=Interval)
 
-y3 = [
+y3 = dataset(data=[
   2.22468795346111614,
   2.68644951495416207,
   2.12892411618697119,
@@ -239,7 +239,7 @@ y3 = [
   1.65034332791316829,
   3.03837409085832,
   1.24697412968412613,
-]
+], scale=Interval)
 
 res = example_and_and(y1, y2, y3)
 print("p-value : %f" % res)

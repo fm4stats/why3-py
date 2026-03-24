@@ -1,9 +1,29 @@
+from typing import NamedTuple
+from typing import Any
+
 from scipy.stats import ttest_1samp
 from scipy.stats import ttest_rel
 from scipy.stats import ttest_ind
 from scipy.stats import tukey_hsd
 from scipy.stats import dunnett
 from scipy.stats import f_oneway
+
+# cameleer/statwhy/lib/logicalFormula.mlw
+#   type scale =
+#    | Nominal
+#    | Ordinal
+#    | Interval
+#    | Rational
+#    | Unspecified
+
+class scale :
+    pass
+
+Nominal = scale()
+Ordinal = scale()
+Interval = scale()
+Rational = scale()
+Unspecified = scale()
 
 # cameleer/statwhy/lib/logicalFormula.mlw
 #   type dataset 'a = {
@@ -13,9 +33,14 @@ from scipy.stats import f_oneway
 
 # examples/executable_examples/cameleerBHL.mli
 # type 'a dataset = 'a list
-dataset = list
 
-Nil = []
+class dataset[T](NamedTuple):
+    data: list[T]
+    scale: scale
+
+#dataset = list
+
+Nil : list[Any] = []
 
 def Cons(x, xs) :
     return [x] + xs
@@ -88,17 +113,17 @@ Two = alternative("two-sided")
 Up = alternative("greater")
 Low = alternative("less")
 
-def exec_ttest_1samp(p : distribution, mu : real, y : list[real], alt : alternative) -> real :
-    return ttest_1samp(y, mu, alternative=alt.alt_string).pvalue
+def exec_ttest_1samp(p : distribution, mu : real, y : dataset[real], alt : alternative) -> real :
+    return float(ttest_1samp(y.data, mu, alternative=alt.alt_string).pvalue)
 
-def exec_ttest_paired(d1 : distribution, d2 : distribution, y1 : list[real], y2 : list[real], alt=alternative) -> real :
-    return ttest_rel(y1, y2, alternative=alt.alt_string).pvalue
+def exec_ttest_paired(d1 : distribution, d2 : distribution, y1 : dataset[real], y2 : dataset[real], alt=alternative) -> real :
+    return ttest_rel(y1.data, y2.data, alternative=alt.alt_string).pvalue
 
-def exec_ttest_ind_eq(d1 : distribution, d2 : distribution, y1 : list[real], y2 : list[real], alt : alternative) -> real :
-    return ttest_ind(y1, y2, equal_var=True, alternative=alt.alt_string).pvalue
+def exec_ttest_ind_eq(d1 : distribution, d2 : distribution, y1 : dataset[real], y2 : dataset[real], alt : alternative) -> real :
+    return ttest_ind(y1.data, y2.data, equal_var=True, alternative=alt.alt_string).pvalue
 
-def exec_ttest_ind_neq(d1 : distribution, d2 : distribution, y1 : list[real], y2 : list[real], alt : alternative) -> real :
-    return ttest_ind(y1, y2, equal_var=False, alternative=alt.alt_string).pvalue
+def exec_ttest_ind_neq(d1 : distribution, d2 : distribution, y1 : dataset[real], y2 : dataset[real], alt : alternative) -> real :
+    return ttest_ind(y1.data, y2.data, equal_var=False, alternative=alt.alt_string).pvalue
 
 def flatten(lists):
     result = []
@@ -106,12 +131,12 @@ def flatten(lists):
         result.extend(l[1+n:])
     return result
 
-def exec_tukey_hsd(d : distribution, xs : list[real]) -> list[real] :
-    result = tukey_hsd(*xs)
+def exec_tukey_hsd(d : distribution, xs : list[dataset[real]]) -> list[real] :
+    result = tukey_hsd(*[x.data for x in xs])
     return flatten(result.pvalue.tolist())
 
 def exec_dunnett(dists : list[distribution], control_dist : distribution, ys : list[dataset[real]], c : dataset[real], alt : alternative) -> array[real] :
-    return dunnett(*ys, control=c, alternative=alt.alt_string).pvalue
+    return [float(p) for p in dunnett(*[y.data for y in ys], control=c.data, alternative=alt.alt_string).pvalue]
 
 def exec_steel_dwass(dists : list[distribution], ys : list[dataset[real]]) -> array[real] :
     raise NotImplementedError
@@ -120,4 +145,4 @@ def exec_steel(dists : list[distribution], control_dist : distribution, ys : lis
     raise NotImplementedError
 
 def exec_oneway_ANOVA(ds : list[distribution], ys : list[dataset[real]]) -> real :
-    return f_oneway(*ys).pvalue
+    return float(f_oneway(*[y.data for y in ys]).pvalue)

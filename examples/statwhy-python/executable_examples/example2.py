@@ -1,4 +1,4 @@
-from statwhy import string, NormalD, Param, real, exec_ttest_paired, Two
+from statwhy import string, NormalD, Param, real, exec_ttest_paired, Two, dataset, Interval
 #@ use cameleerBHL.CameleerBHL
 #@ use ttest.Ttest
 
@@ -29,7 +29,7 @@ def example2(d1, d2) -> real :
 
 #@ execution
 
-y1 = [ \
+y1 = dataset(data=[ \
   0.602625786295998389, \
   2.14566916029819144, \
   1.35823522315676626, \
@@ -40,9 +40,9 @@ y1 = [ \
   1.13256387540348635, \
   2.13263167487555538, \
   -0.690867157847799 \
-]
+], scale=Interval)
 
-y2 : list[real] = [ \
+y2 : dataset[real] = dataset(data=[ \
   1.20573474164759054, \
   2.72478620692767493, \
   1.72478774466419971, \
@@ -53,7 +53,7 @@ y2 : list[real] = [ \
   1.64193391204925154, \
   2.54602531474281335, \
   -0.0302616181108142923 \
-]
+], scale=Interval)
 
 res = example2(y1, y2)
 print("p-value : %f" % res)

@@ -58,6 +58,7 @@ and expr_desc =
   | Etuple of expr list   (* e1, e2, ..., en *)
   | Emake of expr * expr (* [e1] * e2 *)
   | Eget of expr * expr  (* e1[e2] *)
+  | Erecord of (ident * expr) list (* func(id1=e1, ..., idn=en)  (func is ignored) *)
 
 and stmt = {
   stmt_desc: stmt_desc;

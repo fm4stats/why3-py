@@ -1,4 +1,4 @@
-from statwhy import string, NormalD, Param, real, Two
+from statwhy import string, NormalD, Param, real, Two, dataset, Interval
 from statwhy import exec_ttest_ind_eq
 from statwhy import exec_ttest_ind_neq
 #@ use cameleerBHL.CameleerBHL
@@ -52,7 +52,7 @@ def example3_neq(d1, d2) :
 
 #@ execution
 
-y1 = [
+y1 = dataset(data=[
   0.602625786295998389,
   2.14566916029819144,
   1.35823522315676626,
@@ -63,9 +63,9 @@ y1 = [
   1.13256387540348635,
   2.13263167487555538,
   -0.690867157847799,
-]
+], scale=Interval)
 
-y2 = [
+y2 = dataset(data=[
   1.11323083456496041,
   1.50709387256810068,
   2.01790413657013223,
@@ -76,9 +76,9 @@ y2 = [
   3.33147931443587,
   1.92634477831957263,
   0.92746490751175148,
-]
+], scale=Interval)
 
-y3 = [
+y3 = dataset(data=[
   1.14554997101001144,
   2.09354953993055126,
   0.28536806688398042,
@@ -89,9 +89,9 @@ y3 = [
   1.56607760911782146,
   0.481864022121295088,
   0.652102852392709709,
-]
+], scale=Interval)
 
-y4 = [
+y4 = dataset(data=[
   0.539477742609872912,
   -0.084818902916167,
   1.09543658715494718,
@@ -102,7 +102,7 @@ y4 = [
   0.623024431984707,
   1.09926233277460139,
   -0.884200978762662571,
-]
+], scale=Interval)
 
 res1 = example3_eq(y1, y2)
 res2 = example3_neq(y3, y4)

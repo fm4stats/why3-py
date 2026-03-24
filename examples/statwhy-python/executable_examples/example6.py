@@ -1,4 +1,4 @@
-from statwhy import Nil, Cons, string, NormalD, Param, real, Two
+from statwhy import Nil, Cons, string, NormalD, Param, real, Two, dataset, Interval
 from statwhy import exec_tukey_hsd
 
 #@ use cameleerBHL.CameleerBHL
@@ -45,7 +45,7 @@ def example6_tukey_hsd(d1, d2, d3) :
 
 #@ execution
 
-y1 = [
+y1 = dataset(data=[
     0.766619176600281671,
     1.21789185837721869,
     1.99159246988234928,
@@ -56,9 +56,9 @@ y1 = [
     0.391653042798745687,
     0.751061964281471761,
     0.636099333870649319,
-]
+], scale=Interval)
 
-y2 = [
+y2 = dataset(data=[
     1.33080408985008525,
     0.818096098824745,
     0.358846712280329605,
@@ -69,9 +69,9 @@ y2 = [
     2.97841750606052269,
     0.911561712359776899,
     1.51455005196473058,
-  ]
+], scale=Interval)
 
-y3 = [
+y3 = dataset(data=[
     2.73343897147291148,
     1.73257203436255591,
     0.846962147974803514,
@@ -82,7 +82,7 @@ y3 = [
     0.336433008189366722,
     2.844524316810912,
     0.911470664085555438,
-]
+], scale=Interval)
 
 res = example6_tukey_hsd(y1, y2, y3)
 for p in res:
