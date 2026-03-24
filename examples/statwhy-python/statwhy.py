@@ -7,6 +7,7 @@ from scipy.stats import ttest_ind
 from scipy.stats import tukey_hsd
 from scipy.stats import dunnett
 from scipy.stats import f_oneway
+from scipy.stats import chi2_contingency
 
 # cameleer/statwhy/lib/logicalFormula.mlw
 #   type scale =
@@ -146,3 +147,6 @@ def exec_steel(dists : list[distribution], control_dist : distribution, ys : lis
 
 def exec_oneway_ANOVA(ds : list[distribution], ys : list[dataset[real]]) -> real :
     return float(f_oneway(*[y.data for y in ys]).pvalue)
+
+def exec_chi2_contingency(d1 : distribution, d2 : distribution, yy : dataset[list[int]], correction : bool) -> real :
+    return chi2_contingency(yy.data, correction).pvalue
