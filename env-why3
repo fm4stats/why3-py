@@ -1,0 +1,15 @@
+#!/bin/sh
+
+SRC_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+. "$SRC_DIR/.statwhy-install.config"
+
+D="$STATWHY_TARGET_DIR"
+
+env \
+PATH="$STATWHY_TARGET_DIR/bin:$PATH" \
+MYPYPATH="$STATWHY_WHY3_SRC_DIR/examples/statwhy-python" \
+PYTHONPATH="$STATWHY_WHY3_SRC_DIR/examples/statwhy-python" \
+WHY3_PYTHON_EXE="$STATWHY_TARGET_DIR/bin/python" \
+WHY3_PYTHON_TYPE_INFERENCE="$STATWHY_WHY3_SRC_DIR/plugins/python/inf_script.py" \
+"$@"
