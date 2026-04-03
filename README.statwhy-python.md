@@ -12,6 +12,7 @@
 % $D/py/bin/pip install mypy
 % $D/py/bin/pip install scipy
 % $D/py/bin/pip install scipy-stubs
+% $D/py/bin/pip install scikit-posthocs
 % cd $D
 % git clone git@github.com:ykwmt/why3-py.git
 % git clone https://github.com/fm4stats/statwhy.git
