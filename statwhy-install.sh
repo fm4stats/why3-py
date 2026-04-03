@@ -21,6 +21,9 @@
 #   % cd why3-py
 #   % ./statwhy-install.sh $HOME/statwhy statwhy
 #   % eval $(opam env)
+#   % PATH=$HOME/statwhy/bin:$PATH
+#   % ./env-why3 python examples/statwhy-python/executable_examples/ex_chi2_contingency.py
+#   0.03749647249996269
 #   % ./env-why3 why3 ide --debug=python --debug=ide_info --debug=scheduler examples/statwhy-python/executable_examples/ex_chi2_contingency.py --extra-config $HOME/.statwhy.conf
 
 if [ $# -eq 0 ]; then
