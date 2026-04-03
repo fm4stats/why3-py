@@ -114,9 +114,25 @@ install_python_package scipy
 install_python_package scipy-stubs
 install_python_package scikit-posthocs
 
+install_opam_package() {
+  pkg="$1"
+  version="$2"
+
+  if opam list --short | grep -q "^$pkg\$"; then
+    echo "[skip] $pkg already installed."
+  else
+    echo "[do] install $pkg."
+    opam install -y $pkg.$version || exit 1
+  fi
+}
+
 # The version constraint of these packages are different for why3 and cameleer.
 # So, installing them with right versions at beginning avoids recompiling why3 when installing cameleer.
-opam install -y ppx_deriving.6.0.3 ppx_sexp_conv.v0.16.0 sexplib.v0.16.0 sexplib0.v0.16.0
+
+install_opam_package sexplib0 v0.16.0
+install_opam_package sexplib v0.16.0
+install_opam_package ppx_sexp_conv v0.16.0
+install_opam_package ppx_deriving 6.0.3
 
 if opam list --short | grep -q '^why3$'; then
   echo "[skip] why3 already installed."
