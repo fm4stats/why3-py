@@ -25,15 +25,11 @@ RUN echo "deb-src ${mirror} trixie main" > /etc/apt/sources.list.d/deb-src.list 
       python3-venv \
       pkgconf \
       autoconf \
-      automake \
       cvc5 \
       libgmp-dev \
       libcairo2-dev \
       libgtk-3-dev \
       libgtksourceview-3.0-dev \
-      gfortran \
-      libssl-dev \
-      libopenblas-dev \
   && rm -rf /var/lib/apt/lists/*
 
 # sandbox(bubblewrap) don't work in Docker

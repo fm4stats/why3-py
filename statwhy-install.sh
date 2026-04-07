@@ -57,17 +57,13 @@ esac
 # sudo apt install python3-dev
 # sudo apt install python3-venv                 # We need mypy without Cython
 # sudo apt install rsync                        # opam
-# sudo apt install pkgconf                      # why3, scipy
-# sudo apt install autoconf                     # why3, scipy
-# sudo apt install automake                     # scipy
+# sudo apt install pkgconf                      # why3
+# sudo apt install autoconf                     # why3
 # sudo apt install cvc5                         # why3
 # sudo apt install libgmp-dev                   # why3
 # sudo apt install libcairo2-dev                # why3-ide
 # sudo apt install libgtk-3-dev                 # why3-ide
 # sudo apt install libgtksourceview-3.0-dev     # why3-ide
-# sudo apt install gfortran                     # scipy
-# sudo apt install libssl-dev                   # scipy
-# sudo apt install libopenblas-dev              # scipy
 
 if [ -e "$D" ]; then
   echo "[skip] statwhy install directory already exists \"$D\"."
@@ -111,11 +107,11 @@ install_python_package() {
   fi
 }
 
-install_python_package no-manylinux     # disable binary package (disable Cython)
-install_python_package mypy
 install_python_package scipy
 install_python_package scipy-stubs
 install_python_package scikit-posthocs
+install_python_package no-manylinux     # disable binary package (disable Cython) for mypy
+install_python_package mypy
 
 install_opam_package() {
   pkg="$1"
