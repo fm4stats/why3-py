@@ -638,76 +638,6 @@ let copy_io i o =
   in
   aux ()
 
-let python_inf_script = {|
-import sys
-import os
-from pathlib import Path
-
-from mypy import build
-from mypy.options import Options
-from mypy.traverser import TraverserVisitor
-from mypy.nodes import OpExpr
-from mypy.types import Type
-
-#print('foo', file=sys.stderr)
-
-def type_of_node(types, node):
-    if node not in types:
-        return '?'
-    ty = types[node]
-    if not hasattr(ty, 'type'):
-        return '?'
-    return ty.type.name
-
-def analyse(filename):
-    options = Options()
-    #options.incremental = False
-    options.preserve_asts = True
-    options.export_types = True
-    options.mypy_path = [os.path.dirname(filename)]
-
-    python_code = Path(filename).read_text()
-    mod, ext = os.path.splitext(os.path.basename(filename))
-
-    result = build.build(sources=[build.BuildSource(filename, mod, python_code)], options=options)
-
-    if result.errors:
-        print("Errors:", result.errors)
-        sys.exit(1)
-
-    if mod not in result.graph:
-        print(f"Error: {mod} module not found in result.graph")
-        sys.exit(1)
-
-    tree = result.graph[mod].tree
-    types = result.types
-
-    class ExpressionTypeExtractor(TraverserVisitor):
-        def visit_op_expr(self, node: OpExpr) -> None:
-            left_type = type_of_node(types, node.left)
-            right_type = type_of_node(types, node.right)
-            result_type = type_of_node(types, node)
-            arg_types = ':'.join([left_type, right_type])
-            row = [
-              str(node.line),
-              str(node.column),
-              str(node.end_line),
-              str(node.end_column),
-              node.op,
-              arg_types,
-              result_type
-            ]
-            print(','.join(row))
-            super().visit_op_expr(node)
-
-    extractor = ExpressionTypeExtractor()
-    tree.accept(extractor)
-
-for fn in sys.argv[1:]:
-    #print(fn, file=sys.stderr)
-    analyse(fn)
-|}
-
 let read_typeinfo i tbl =
   let rec aux () =
     try
@@ -741,29 +671,21 @@ let typeinf_python fn =
     with Not_found ->
       None
   in
-  let (i, clo) =
-    match typeinf_program_opt with
-    | Some typeinf_program ->
-        let (exe, args) =
-          match why3_python_exe_opt with
-          | Some exe -> (exe, [|exe; typeinf_program; fn|])
-          | None -> (typeinf_program, [|typeinf_program; fn|])
-        in
-        let i = Unix.open_process_args_in exe args in
-        (i, fun () -> Unix.close_process_in i)
-    | None ->
-        let exe = match why3_python_exe_opt with Some exe -> exe | None -> "python3" in
-        let (i, o) = Unix.open_process_args exe [|exe; "-"; fn|] in
-        output_string o python_inf_script;
-        close_out o;
-        (i, fun () -> Unix.close_process (i, o))
-  in
   let tbl = Hashtbl.create 0 in
-  read_typeinfo i tbl;
-  let status = clo () in
-  match status with
-  | Unix.WEXITED 0 -> tbl
-  | _ -> raise (Failure "python type inference failure")
+  match typeinf_program_opt with
+  | None ->
+      tbl
+  | Some typeinf_program ->
+      let (exe, args) =
+        match why3_python_exe_opt with
+        | Some exe -> (exe, [|exe; typeinf_program; fn|])
+        | None -> (typeinf_program, [|typeinf_program; fn|])
+      in
+      let i = Unix.open_process_args_in exe args in
+      read_typeinfo i tbl;
+      match Unix.close_process_in i with
+      | Unix.WEXITED 0 -> tbl
+      | _ -> raise (Failure "python type inference failure")
 
 let read_channel' env path file c =
   let tmp_prefix = Option.value ~default:file (Filename.chop_suffix_opt ~suffix:".py" (Filename.basename file)) ^ "-" in
