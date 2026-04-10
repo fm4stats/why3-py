@@ -111,22 +111,39 @@ else
   ) || exit 1
 fi
 
-install_python_package() {
-  pkg="$1"
+"$D/bin/pip3" install -r /dev/stdin <<End || exit 1
+contourpy==1.3.3
+cycler==0.12.1
+fonttools==4.62.1
+kiwisolver==1.5.0
+matplotlib==3.10.8
+numpy==2.4.4
+numpy-typing-compat==20251206.2.4
+optype==0.17.0
+packaging==26.0
+pandas==3.0.2
+patsy==1.0.2
+pillow==12.2.0
+pyparsing==3.3.2
+python-dateutil==2.9.0.post0
+scikit-posthocs==0.12.0
+scipy==1.17.1
+scipy-stubs==1.17.1.3
+seaborn==0.13.2
+six==1.17.0
+statsmodels==0.14.6
+typing_extensions==4.15.0
+End
 
-  if "$D/bin/pip3" list | grep -q "^${pkg} "; then
-    echo "[skip] ${pkg} already installed."
-  else
-    echo "[do] install ${pkg}."
-    "$D/bin/pip3" install "${pkg}" || exit 1
-  fi
-}
+# disable binary package (disable Cython) for mypy
+"$D/bin/pip3" install no-manylinux || exit 1
 
-install_python_package scipy
-install_python_package scipy-stubs
-install_python_package scikit-posthocs
-install_python_package no-manylinux     # disable binary package (disable Cython) for mypy
-install_python_package mypy
+"$D/bin/pip3" install -r /dev/stdin <<End || exit 1
+mypy==1.20.0
+mypy_extensions==1.1.0
+librt==0.9.0
+pathspec==1.0.4
+End
 
 install_opam_package() {
   pkg="$1"
