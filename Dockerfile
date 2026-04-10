@@ -19,10 +19,13 @@ RUN echo "deb-src ${mirror} trixie main" > /etc/apt/sources.list.d/deb-src.list 
   && apt-get update \
   && apt-get install \
       opam \
+      wget \
       git \
       rsync \
-      python3-dev \
-      python3-venv \
+      ca-certificates \
+      build-essential \
+      libsqlite3-dev \
+      libssl-dev \
       pkgconf \
       autoconf \
       cvc5 \

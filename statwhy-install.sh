@@ -52,18 +52,24 @@ case "$D" in
    ;;
 esac
 
-# sudo apt install opam
-# sudo apt install git
-# sudo apt install python3-dev
-# sudo apt install python3-venv                 # We need mypy without Cython
-# sudo apt install rsync                        # opam
-# sudo apt install pkgconf                      # why3
-# sudo apt install autoconf                     # why3
-# sudo apt install cvc5                         # why3
-# sudo apt install libgmp-dev                   # why3
-# sudo apt install libcairo2-dev                # why3-ide
-# sudo apt install libgtk-3-dev                 # why3-ide
-# sudo apt install libgtksourceview-3.0-dev     # why3-ide
+# required debian packages
+#
+# opam
+# git
+# wget
+# ca-certificates               # https access (opam, pip)
+# build-essential               # python
+# libsqlite3-dev                # python (sqlite module)
+# libssl-dev                    # python (ssl module)
+# ca-certificates               # opam
+# rsync                         # opam
+# pkgconf                       # why3
+# autoconf                      # why3
+# cvc5                          # why3
+# libgmp-dev                    # why3
+# libcairo2-dev                 # why3-ide
+# libgtk-3-dev                  # why3-ide
+# libgtksourceview-3.0-dev      # why3-ide
 
 if [ -e "$D" ]; then
   echo "[skip] statwhy install directory already exists \"$D\"."
@@ -89,21 +95,30 @@ fi
 
 eval $(opam env --switch="$opam_switch")
 
-if [ -e "$D/bin/python" ]; then
-  echo "[skip] python venv already setup."
+if [ -e "$D/bin/python3.14" ]; then
+  echo "[skip] python3.14 already installed."
 else
-  echo "[do] create python venv"
-  python3 -m venv "$D" || exit 1
+  echo "[do] install python3.14"
+  (
+    cd "$D/$dir" &&
+    (test -f Python-3.14.4.tar.xz ||
+     wget https://www.python.org/ftp/python/3.14.4/Python-3.14.4.tar.xz) &&
+    tar xf Python-3.14.4.tar.xz &&
+    cd Python-3.14.4 &&
+    ./configure --prefix="$D" &&
+    make &&
+    make install
+  ) || exit 1
 fi
 
 install_python_package() {
   pkg="$1"
 
-  if "$D/bin/pip" list | grep -q "^${pkg} "; then
+  if "$D/bin/pip3" list | grep -q "^${pkg} "; then
     echo "[skip] ${pkg} already installed."
   else
     echo "[do] install ${pkg}."
-    "$D/bin/pip" install "${pkg}" || exit 1
+    "$D/bin/pip3" install "${pkg}" || exit 1
   fi
 }
 
