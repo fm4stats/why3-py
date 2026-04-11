@@ -157,13 +157,43 @@ install_opam_package() {
   fi
 }
 
-# The version constraint of these packages are different for why3 and cameleer.
-# So, installing them with right versions at beginning avoids recompiling why3 when installing cameleer.
-
-install_opam_package sexplib0 v0.16.0
-install_opam_package sexplib v0.16.0
-install_opam_package ppx_sexp_conv v0.16.0
-install_opam_package ppx_deriving 6.0.3
+opam install -y \
+  base.v0.16.4 \
+  cairo2.0.6.5 \
+  camlp-streams.5.0.1 \
+  cmdliner.1.3.0 \
+  conf-autoconf.0.2 \
+  conf-cairo.1 \
+  conf-gmp.5 \
+  conf-gtk3.18 \
+  conf-gtksourceview3.0+2 \
+  conf-pkg-config.4 \
+  cppo.1.8.0 \
+  csexp.1.5.2 \
+  dune.3.22.1 \
+  dune-configurator.3.22.1 \
+  fmt.0.11.0 \
+  lablgtk3.3.1.5 \
+  lablgtk3-sourceview3.3.1.5 \
+  menhir.20260209 \
+  menhirCST.20260209 \
+  menhirGLR.20260209 \
+  menhirLib.20260209 \
+  menhirSdk.20260209 \
+  num.1.6 \
+  ocaml-compiler-libs.v0.12.4 \
+  ocamlbuild.0.16.1 \
+  ocamlfind.1.9.8 \
+  parsexp.v0.16.0 \
+  ppx_derivers.1.2.1 \
+  ppx_deriving.6.0.3 \
+  ppx_sexp_conv.v0.16.0 \
+  ppxlib.0.35.0 \
+  sexplib.v0.16.0 \
+  sexplib0.v0.16.0 \
+  stdlib-shims.0.3.0 \
+  topkg.1.1.1 \
+  zarith.1.14
 
 if opam list --short | grep -q '^why3$'; then
   echo "[skip] why3 already installed."
