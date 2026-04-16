@@ -47,5 +47,7 @@ y1 = dataset(data=[1,2,3,5,1], scale=Interval)
 y2 = dataset(data=[12,31,54,62,12], scale=Interval)
 y3 = dataset(data=[10,12,6,74,11], scale=Interval)
 
-for x in ex_dscf3(y1, y2, y3) :
-    print("%f %f %f" % (x[0], x[1], x[2]))
+result = ex_dscf3(y1, y2, y3)
+print("p-value between y1 and y2: %f" % result[0])
+print("p-value between y1 and y3: %f" % result[1])
+print("p-value between y2 and y3: %f" % result[2])

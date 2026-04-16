@@ -9,7 +9,7 @@ from scipy.stats import dunnett
 from scipy.stats import f_oneway
 from scipy.stats import chi2_contingency
 
-import scikit_posthocs as sp
+from scikit_posthocs import posthoc_dscf # type: ignore
 
 # cameleer/statwhy/lib/logicalFormula.mlw
 #   type scale =
@@ -142,7 +142,7 @@ def exec_dunnett(dists : list[distribution], control_dist : distribution, ys : l
     return [float(p) for p in dunnett(*[y.data for y in ys], control=c.data, alternative=alt.alt_string).pvalue]
 
 def exec_steel_dwass(dists : list[distribution], ys : list[dataset[real]]) -> array[real] :
-    return sp.posthoc_dscf([y.data for y in ys]).values.tolist()
+    return flatten(posthoc_dscf([y.data for y in ys]).values.tolist())
 
 def exec_steel(dists : list[distribution], control_dist : distribution, ys : list[dataset[real]], c : dataset[real], alt : alternative) -> array[real] :
     raise NotImplementedError
