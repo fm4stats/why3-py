@@ -111,7 +111,7 @@ else
   ) || exit 1
 fi
 
-"$D/bin/pip3" install -r /dev/stdin <<End || exit 1
+"$D/bin/pip3" install --no-binary mypy -r /dev/stdin <<End || exit 1
 contourpy==1.3.3
 cycler==0.12.1
 fonttools==4.62.1
@@ -133,12 +133,6 @@ seaborn==0.13.2
 six==1.17.0
 statsmodels==0.14.6
 typing_extensions==4.15.0
-End
-
-# disable binary package (disable Cython) for mypy
-"$D/bin/pip3" install no-manylinux || exit 1
-
-"$D/bin/pip3" install -r /dev/stdin <<End || exit 1
 mypy==1.20.0
 mypy_extensions==1.1.0
 librt==0.9.0
