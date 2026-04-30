@@ -1,13 +1,16 @@
+#!/usr/bin/python3
+
 import re
+import sys
 import os
 import tempfile
 import subprocess
 from functools import reduce
 from jinja2 import Template
 
-ngroups = 4
+template_dict = {}
 
-template = r'''
+template_dict['tukey_hsd'] = r'''
 from statwhy import Nil, Cons, string, NormalD, Param, real, Two, dataset, Interval
 from statwhy import exec_tukey_hsd
 
@@ -54,7 +57,19 @@ def ex_tukey_hsd({{fargs}}) :
                           {{py_d_list}})
 '''
 
-template = Template(template, trim_blocks=True, lstrip_blocks=True)
+if len(sys.argv) != 3:
+    print("Usage: bench-tukey_hsd.py TESTNAME NGROUPS", file=sys.stderr)
+    print("Example: bench-tukey_hsd.py tukey_hsd 3", file=sys.stderr)
+    sys.exit(1)
+
+testname = sys.argv[1]
+ngroups = int(sys.argv[2])
+
+if not (testname in template_dict) :
+    print(f"Invalid testname: {testname}", file=sys.stderr)
+    sys.exit(1)
+
+template = Template(template_dict[testname], trim_blocks=True, lstrip_blocks=True)
 
 groups = range(1, 1 + ngroups)
 
@@ -90,7 +105,7 @@ fp.write(result)
 fp.write("\n")
 fp.close()
 
-print(fp.name)
+#print(fp.name)
 
 commandline = [
     "./env-why3",
@@ -130,6 +145,6 @@ else:
     raise RuntimeError("end-time not found")
 
 time = wall_clock2 - wall_clock1
-print(time)
+print(f"testname={testname} ngroups={ngroups} time={time}")
 
 #print(log)
