@@ -52,7 +52,6 @@ def ex_tukey_hsd({{fargs}}) :
 
     return exec_tukey_hsd({{py_n_list}}, \
                           {{py_d_list}})
-
 '''
 
 template = Template(template, trim_blocks=True, lstrip_blocks=True)
@@ -88,6 +87,7 @@ result = template.render(groups=groups,
 
 fp = tempfile.NamedTemporaryFile(mode='w+', prefix="statwhy-py-bench.", suffix=".py", delete=False, delete_on_close=False)
 fp.write(result)
+fp.write("\n")
 fp.close()
 
 print(fp.name)
@@ -114,7 +114,6 @@ log = process_result.stderr
 # end-time:
 # <scheduler>schedule_proof_attempt(callback): s=Done(Valid (0.10s, 64683 steps)) wall-clock=1777533483.874670s
 # <scheduler>schedule_proof_attempt(callback): s=Done(Timeout (5.00s, 235866 steps)) wall-clock=1777533485.377639s
-
 
 match = re.search(r"<ide_info>interp command 'StatWhy[a-z_]*' wall-clock=([0-9.]+)", log)
 
