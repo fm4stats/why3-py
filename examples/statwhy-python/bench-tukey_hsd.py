@@ -59,32 +59,24 @@ template = Template(template, trim_blocks=True, lstrip_blocks=True)
 
 groups = range(1, 1 + ngroups)
 
+def ml_list(l):
+    return reduce(
+        lambda acc, x: f"(Cons {x} {acc})",
+        reversed(l),
+        "Nil")
+
+def py_list(l):
+    return reduce(
+        lambda acc, x: f"Cons({x}, {acc})",
+        reversed(l),
+        "Nil")
+
 fargs = ", ".join(f"d{i}" for i in groups)
-ml_mu_list = reduce(
-    lambda acc, i: f"(Cons t_mu{i} {acc})",
-    reversed(groups),
-    "Nil"
-)
-ml_n_list = reduce(
-    lambda acc, i: f"(Cons t_n{i} {acc})",
-    reversed(groups),
-    "Nil"
-)
-ml_d_list = reduce(
-    lambda acc, i: f"(Cons d{i} {acc})",
-    reversed(groups),
-    "Nil"
-)
-py_n_list = reduce(
-    lambda acc, i: f"Cons(t_n{i}, {acc})",
-    reversed(groups),
-    "Nil"
-)
-py_d_list = reduce(
-    lambda acc, i: f"Cons(d{i}, {acc})",
-    reversed(groups),
-    "Nil"
-)
+ml_mu_list = ml_list([f"t_mu{i}" for i in groups])
+ml_n_list = ml_list([f"t_n{i}" for i in groups])
+ml_d_list = ml_list([f"d{i} " for i in groups])
+py_n_list = py_list([f"t_n{i}" for i in groups])
+py_d_list = py_list([f"d{i}" for i in groups])
 
 result = template.render(groups=groups,
                          fargs=fargs,
