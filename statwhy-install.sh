@@ -111,6 +111,8 @@ else
   ) || exit 1
 fi
 
+echo "[do] install Python packages"
+
 "$D/bin/pip3" install --no-binary mypy -r /dev/stdin <<End || exit 1
 contourpy==1.3.3
 cycler==0.12.1
@@ -138,6 +140,8 @@ mypy_extensions==1.1.0
 librt==0.9.0
 pathspec==1.0.4
 End
+
+echo "[do] install OCaml packages"
 
 install_opam_package() {
   pkg="$1"
