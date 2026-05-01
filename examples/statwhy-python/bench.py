@@ -239,7 +239,7 @@ fp.write(result)
 fp.write("\n")
 fp.close()
 
-print(fp.name)
+#print(fp.name)
 
 commandline = [
     "./env-why3",
