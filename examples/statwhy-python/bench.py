@@ -142,6 +142,46 @@ def ex_dscf({{fargs}}) -> array[real] :
     return exec_steel_dwass({{py_p_list}}, {{py_d_list}})
 '''
 
+template_dict['bonferroni'] = r'''
+from statwhy import string, NormalD, Param, real, exec_ttest_1samp, Two
+#@ use cameleerBHL.CameleerBHL
+#@ use ttest.Ttest
+
+{% for i in groups %}
+p{{i}} = NormalD(Param("mu{{i}}"), Param("var"))
+{% endfor %}
+
+def ex_bonferroni({{fargs}}) -> real :
+    #@ requires \
+{% for i in groups %}
+    #@  d{{i}}.scale = Interval /\ \
+    #@  sampled d{{i}} p{{i}} /\ \
+    #@  (World !st interp) |= Possible (mean p{{i}} $< const_term {{i}}.0) /\ \
+    #@  (World !st interp) |= Possible (mean p{{i}} $> const_term {{i}}.0) /\ \
+{% endfor %}
+    #@  is_empty !st
+
+    #@ ensures \
+    #@  let p = result in \
+    #@  (Leq p) = compose_pvs \
+    #@              ( \
+{% for i in groups %}
+    #@               {{ "$||" if not loop.first }} (mean p{{i}} $!= const_term {{i}}.0) \
+{% endfor %}
+    #@              ) !st && \
+    #@  (World !st interp) |= StatB (Leq p) ( \
+{% for i in groups %}
+    #@                                       {{ "$||" if not loop.first }} (mean p{{i}} $!= const_term {{i}}.0) \
+{% endfor %}
+    #@                                      )
+
+{% for i in groups %}
+    r{{i}} = exec_ttest_1samp(p{{i}}, {{i}}.0, d{{i}}, Two)
+{% endfor %}
+    return {{py_add_r}}
+'''
+
+
 if len(sys.argv) != 3:
     print("Usage: python3 bench.py TESTNAME NGROUPS", file=sys.stderr)
     print("Example: python3 bench.py tukey_hsd 3", file=sys.stderr)
@@ -176,6 +216,7 @@ ml_mu_list = ml_list([f"t_mu{i}" for i in groups])
 ml_n_list = ml_list([f"t_n{i}" for i in groups])
 ml_d_list = ml_list([f"d{i}" for i in groups])
 ml_p_list = ml_list([f"p{i}" for i in groups])
+py_add_r = " + ".join(f"r{i}" for i in groups)
 py_n_list = py_list([f"t_n{i}" for i in groups])
 py_d_list = py_list([f"d{i}" for i in groups])
 py_p_list = py_list([f"p{i}" for i in groups])
@@ -187,6 +228,7 @@ result = template.render(groups=groups,
                          ml_n_list=ml_n_list,
                          ml_d_list=ml_d_list,
                          ml_p_list=ml_p_list,
+                         py_add_r=py_add_r,
                          py_n_list=py_n_list,
                          py_d_list=py_d_list,
                          py_p_list=py_p_list)
