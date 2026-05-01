@@ -185,6 +185,7 @@ def ex_bonferroni({{fargs}}) -> real :
 if len(sys.argv) != 3:
     print("Usage: python3 bench.py TESTNAME NGROUPS", file=sys.stderr)
     print("Example: python3 bench.py tukey_hsd 3", file=sys.stderr)
+    print(f"Supported Tests: {" ".join(template_dict.keys())}", file=sys.stderr)
     sys.exit(1)
 
 testname = sys.argv[1]
