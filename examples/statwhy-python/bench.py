@@ -264,10 +264,11 @@ log = process_result.stderr
 # <scheduler>schedule_proof_attempt(callback): s=Done(Valid (0.10s, 64683 steps)) wall-clock=1777533483.874670s
 # <scheduler>schedule_proof_attempt(callback): s=Done(Timeout (5.00s, 235866 steps)) wall-clock=1777533485.377639s
 
-match = re.search(r"<ide_info>interp command 'StatWhy[a-z_]*' wall-clock=([0-9.]+)", log)
+match = re.search(r"<ide_info>interp command '(StatWhy[a-z_]*)' wall-clock=([0-9.]+)", log)
 
 if match:
-    wall_clock1 = float(match.group(1))
+    strategy = match.group(1)
+    wall_clock1 = float(match.group(2))
 else:
     raise RuntimeError("start-time not found")
 
@@ -279,6 +280,6 @@ else:
     raise RuntimeError("end-time not found")
 
 time = wall_clock2 - wall_clock1
-print(f"testname={testname} ngroups={ngroups} time={time}")
+print(f"{testname},{ngroups},{strategy},{time}")
 
 #print(log)
