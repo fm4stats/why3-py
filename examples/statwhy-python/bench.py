@@ -98,6 +98,50 @@ def ex_dunnett({{fargs}}, c) -> array[real] :
                         {{py_d_list}}, c, Two)
 '''
 
+template_dict['dscf'] = r'''
+from statwhy import Nil, Cons, array, string, NormalD, UnknownD, Param, Const, real, Two, dataset, Interval
+from statwhy import exec_steel_dwass
+
+#@ use cameleerBHL.CameleerBHL
+#@ use steel_dwass.Steel_Dwass
+#@ use array.Array
+
+{% for i in groups %}
+p{{i}} = UnknownD("p{{i}}")
+{% endfor %}
+
+def ex_dscf({{fargs}}) -> array[real] :
+    #@ requires \
+{% for i in groups %}
+    #@          let t_mu{{i}} = RealT (mean p{{i}}) in \
+{% endfor %}
+    #@          let terms = {{ml_mu_list}} in \
+    #@          !st = Nil /\ \
+    #@          {{eq_d_scale}} = Interval /\ \
+    #@          for_all2 \
+    #@            sampled \
+    #@            {{ml_d_list}} \
+    #@            {{ml_p_list}} /\ \
+{% for i in groups[:-1] %}
+    #@          (World !st interp)|= eq_variance p{{i}} p{{i+1}} /\ \
+{% endfor %}
+    #@          for_all (fun fml -> (World !st interp) |= Possible fml) (combinations terms "<") /\ \
+    #@          for_all (fun fml -> (World !st interp) |= Possible fml) (combinations terms ">")
+    #@  ensures \
+{% for i in groups %}
+    #@    let t_mu{{i}} = RealT (mean p{{i}}) in \
+{% endfor %}
+    #@    let terms = {{ml_mu_list}} in \
+    #@    let ps = result in \
+    #@    for_all (fun t -> let (i,fml) = t in \
+    #@              (Eq (ps[i]) = compose_pvs fml !st) && \
+    #@              (World !st interp |= StatB (Eq (ps[i])) fml)) \
+    #@            (enumerate (combinations terms "!=") 0)
+
+    # StatWhy's exec_steel_dwass can be used as DSCF test.
+    return exec_steel_dwass({{py_p_list}}, {{py_d_list}})
+'''
+
 if len(sys.argv) != 3:
     print("Usage: python3 bench.py TESTNAME NGROUPS", file=sys.stderr)
     print("Example: python3 bench.py tukey_hsd 3", file=sys.stderr)
@@ -127,16 +171,18 @@ def py_list(l):
         "Nil")
 
 fargs = ", ".join(f"d{i}" for i in groups)
+eq_d_scale = " = ".join(f"d{i}.scale" for i in groups)
 ml_mu_list = ml_list([f"t_mu{i}" for i in groups])
 ml_n_list = ml_list([f"t_n{i}" for i in groups])
-ml_d_list = ml_list([f"d{i} " for i in groups])
-ml_p_list = ml_list([f"p{i} " for i in groups])
+ml_d_list = ml_list([f"d{i}" for i in groups])
+ml_p_list = ml_list([f"p{i}" for i in groups])
 py_n_list = py_list([f"t_n{i}" for i in groups])
 py_d_list = py_list([f"d{i}" for i in groups])
 py_p_list = py_list([f"p{i}" for i in groups])
 
 result = template.render(groups=groups,
                          fargs=fargs,
+                         eq_d_scale=eq_d_scale,
                          ml_mu_list=ml_mu_list,
                          ml_n_list=ml_n_list,
                          ml_d_list=ml_d_list,
