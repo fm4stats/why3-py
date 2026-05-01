@@ -57,9 +57,50 @@ def ex_tukey_hsd({{fargs}}) :
                           {{py_d_list}})
 '''
 
+template_dict['dunnett'] = r'''
+from statwhy import Nil, Cons, array, string, NormalD, Param, Const, real, Two
+from statwhy import exec_dunnett
+
+#@ use cameleerBHL.CameleerBHL
+#@ use dunnett.Dunnett
+#@ use array.Array
+
+p0 = NormalD(Param("mu0"), Const(1.0))
+{% for i in groups %}
+p{{i}} = NormalD(Param("mu{{i}}"), Const(1.0))
+{% endfor %}
+
+def ex_dunnett({{fargs}}, c) -> array[real] :
+    #@ requires for_all (fun d -> d.scale = Interval) \
+    #@                   {{ml_d_list}} /\ \
+    #@          independent_list \
+    #@            {{ml_d_list}} /\ \
+    #@          c.scale = Interval /\ \
+    #@          !st = Nil /\ \
+    #@          for_all2 \
+    #@            sampled \
+    #@            {{ml_d_list}} \
+    #@            {{ml_p_list}} /\ \
+    #@          sampled c p0 /\ \
+    #@          for_all \
+    #@            (fun p -> (World !st interp) |= Possible (mean p0 $< mean p) /\ \
+    #@                      (World !st interp) |= Possible (mean p0 $> mean p)) \
+    #@            {{ml_p_list}}
+
+    #@  ensures \
+    #@    let ps = result in \
+    #@    for_all (fun t -> let (i,p) = t in \
+    #@              (Eq (ps[i]) = compose_pvs (mean p0 $!= mean p) !st) && \
+    #@              (World !st interp |= StatB (Eq (ps[i])) (mean p0 $!= mean p))) \
+    #@            (enumerate {{ml_p_list}} 0)
+
+    return exec_dunnett({{py_p_list}}, p0, \
+                        {{py_d_list}}, c, Two)
+'''
+
 if len(sys.argv) != 3:
-    print("Usage: bench-tukey_hsd.py TESTNAME NGROUPS", file=sys.stderr)
-    print("Example: bench-tukey_hsd.py tukey_hsd 3", file=sys.stderr)
+    print("Usage: python3 bench.py TESTNAME NGROUPS", file=sys.stderr)
+    print("Example: python3 bench.py tukey_hsd 3", file=sys.stderr)
     sys.exit(1)
 
 testname = sys.argv[1]
@@ -89,23 +130,27 @@ fargs = ", ".join(f"d{i}" for i in groups)
 ml_mu_list = ml_list([f"t_mu{i}" for i in groups])
 ml_n_list = ml_list([f"t_n{i}" for i in groups])
 ml_d_list = ml_list([f"d{i} " for i in groups])
+ml_p_list = ml_list([f"p{i} " for i in groups])
 py_n_list = py_list([f"t_n{i}" for i in groups])
 py_d_list = py_list([f"d{i}" for i in groups])
+py_p_list = py_list([f"p{i}" for i in groups])
 
 result = template.render(groups=groups,
                          fargs=fargs,
                          ml_mu_list=ml_mu_list,
                          ml_n_list=ml_n_list,
                          ml_d_list=ml_d_list,
+                         ml_p_list=ml_p_list,
                          py_n_list=py_n_list,
-                         py_d_list=py_d_list)
+                         py_d_list=py_d_list,
+                         py_p_list=py_p_list)
 
 fp = tempfile.NamedTemporaryFile(mode='w+', prefix="statwhy-py-bench.", suffix=".py", delete=False, delete_on_close=False)
 fp.write(result)
 fp.write("\n")
 fp.close()
 
-#print(fp.name)
+print(fp.name)
 
 commandline = [
     "./env-why3",
