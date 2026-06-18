@@ -17,7 +17,7 @@
 #   This uses $HOME/statwhy and $HOME/.opam/statwhy.
 #   env-why3 sets several environment variables.
 #
-#   % git clone --depth 1 --branch python-real http://host/path/why3-py.git
+#   % git clone --depth 1 --branch statwhy http://host/path/why3-py.git
 #   % cd why3-py
 #   % ./statwhy-install.sh $HOME/statwhy statwhy
 #   % eval $(opam env)
