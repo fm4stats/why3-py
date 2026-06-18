@@ -17,12 +17,12 @@
 #   This uses $HOME/statwhy and $HOME/.opam/statwhy.
 #   env-why3 sets several environment variables.
 #
-#   % git clone --depth 1 --branch statwhy http://host/path/why3-py.git
+#   % git clone --depth 1 --branch statwhy https://github.com/fm4stats/why3-py.git
 #   % cd why3-py
 #   % ./statwhy-install.sh $HOME/statwhy statwhy
 #   % eval $(opam env)
 #   % PATH=$HOME/statwhy/bin:$PATH
-#   % ./env-why3 python examples/statwhy-python/executable_examples/ex_chi2_contingency.py
+#   % ./env-why3 python3 examples/statwhy-python/executable_examples/ex_chi2_contingency.py
 #   0.03749647249996269
 #   % ./env-why3 why3 ide --debug=python --debug=ide_info --debug=scheduler examples/statwhy-python/executable_examples/ex_chi2_contingency.py --extra-config $HOME/.statwhy.conf
 
