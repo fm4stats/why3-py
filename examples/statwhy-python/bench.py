@@ -225,7 +225,7 @@ def ex_combine_pvs_fisher({{pv_fargs}}, fml: formula) -> real :
 
 # The p-values for the 3 experiments
 {% for i in groups %}
-pv{{i}} : real = 0.{{i}}
+pv{{i}} : real = {{i | float}}
 {% endfor %}
 
 # The dummy alternative hypothesis
