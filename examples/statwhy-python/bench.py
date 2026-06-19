@@ -220,20 +220,6 @@ def ex_combine_pvs_fisher({{pv_fargs}}, fml: formula) -> real :
 
     pvs = {{py_pv_list}}
     return exec_combine_pvs_fisher(pvs, exps, disj_exps, fml)
-
-#@ execution
-
-# The p-values for the 3 experiments
-{% for i in groups %}
-pv{{i}} : real = {{i | float}}
-{% endfor %}
-
-# The dummy alternative hypothesis
-fml = formula()
-
-res = ex_combine_pvs_fisher({{pv_aargs}}, fml)
-print("ex_combine_pvs_fisher p-value : %f" % res)
-# p-value : 0.115216
 '''
 
 if len(sys.argv) != 3:
