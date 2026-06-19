@@ -1,3 +1,76 @@
+WHY3-PY
+====
+
+Why3-py is a modified version of the Why3 verification platform developed for StatWhy.
+It supports the execution and verification of statistical Python programs.
+
+The original Why3 project is available at:
+https://www.why3.org/
+
+Installation
+------------
+
+Why3-py installs its dependencies (Python, mypy, etc.) into a dedicated directory. It also creates a dedicated opam switch.
+In the last command, `./statwhy-install.sh $HOME/statwhy statwhy`, `$HOME/statwhy` specifies the installation directory and `statwhy` specifies the name of the opam switch.
+
+This software is tested with Debian GNU/Linux 13 (trixie).
+
+```
+% sudo apt-get install \
+  opam \
+  wget \
+  git \
+  rsync \
+  ca-certificates \
+  build-essential \
+  libsqlite3-dev \
+  libssl-dev \
+  pkgconf \
+  autoconf \
+  cvc5 \
+  libgmp-dev \
+  libcairo2-dev \
+  libgtk-3-dev \
+  libgtksourceview-3.0-dev
+% git clone https://github.com/fm4stats/why3-py.git
+% cd why3-py
+% ./statwhy-install.sh $HOME/statwhy statwhy
+```
+
+Example
+-------
+
+After installation, examples can be run as follows.
+(`env-why3` and `statwhy-py` must be executed from the Why3-py source directory.)
+
+```
+% ./env-why3 python3 examples/statwhy-python/meta/ex_combine_pvs_fisher.py
+ex_combine_pvs_fisher p-value : 0.115216
+```
+
+Verification can be started with the `./statwhy-py` command.
+This starts the IDE of Why3.
+
+```
+% ./statwhy-py examples/statwhy-python/meta/ex_combine_pvs_fisher.py
+```
+
+![](./doc-statwhy/figures/why3-py-start.png?raw=true "The Why3 IDE screen at start.")
+
+Verification in Why3-py (and StatWhy) is performed by selecting the `StatWhy` item from the context menu of the root node in the left pane.
+The context menu is shown by Right-Click at the root node (shown as question mark and "ex\_combine\_pvs\_fisher.py").
+
+All descendants are folded, and the question mark changes to a green check mark.
+This indicates that the verification has succeeded.
+
+![](./doc-statwhy/figures/why3-py-verified.png?raw=true "The Why3 IDE screen: verification succeed.")
+
+More examples can be found in the `examples/statwhy-python/` directory.
+
+====
+The original README.md of Why3 is follows:
+====
+
 WHY3
 ====
 
