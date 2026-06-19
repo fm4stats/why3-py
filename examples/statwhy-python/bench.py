@@ -181,6 +181,60 @@ def ex_bonferroni({{fargs}}) -> real :
     return {{py_add_r}}
 '''
 
+template_dict['combine_pvs_fisher'] = r'''
+from statwhy import Nil, Cons, real
+from statwhy import formula, Disj, sit
+from statwhy import exec_combine_pvs_fisher
+
+#@ use cameleerBHL.CameleerBHL
+#@ use combine_pvs.CombinePVs
+#@ use list.Map
+
+# The ID numbers for 3 experiments
+{% for i in groups %}
+exp{{i}} : real = {{i}}.0
+{% endfor %}
+exps : list[real] = {{py_exp_list}}
+
+# The disjunctive formula representing one of the three situations
+disj_exps : formula = {{py_exp_disj}}
+
+# Executes Fisher's method for combining 3 p-values.
+
+def ex_combine_pvs_fisher({{pv_fargs}}, fml: formula) -> real :
+    #@  requires \
+    #@    let pvs = {{ml_pv_list}} in \
+    #@    intend_to_detect_excess_of_small_pv /\ \
+    #@    let d : dataset real = { data = pvs; scale = Interval } in \
+    #@    sampled d uniform_pv /\ (* Each p-value in d is sampled uniformly & independently. *) \
+    #@    length pvs > 0 /\ \
+    #@    pvalues pvs /\ \
+    #@    for_all2 (fun pv exp -> (exists w' : world. w' |= StatB (Eq pv) (Conj (sit exp) fml))) pvs exps
+    #       The statistical belief under the situation (sit exp) where each experiment exp has done. *)
+    #  (* for_all (fun exp -> (World !st interp |= (Impl (sit exp) disj_exps))) exps /\
+    #     for_all (fun exp -> (World !st interp |= (Impl (Disj disj_exps (sit exp)) disj_exps))) exps *)
+
+    #@  ensures \
+    #@    pvalue result /\ \
+    #@    (World !st interp |= StatB (Eq result) (Conj  disj_exps fml))
+
+    pvs = {{py_pv_list}}
+    return exec_combine_pvs_fisher(pvs, exps, disj_exps, fml)
+
+#@ execution
+
+# The p-values for the 3 experiments
+{% for i in groups %}
+pv{{i}} : real = 0.{{i}}
+{% endfor %}
+
+# The dummy alternative hypothesis
+fml = formula()
+
+res = ex_combine_pvs_fisher({{pv_aargs}}, fml)
+print("ex_combine_pvs_fisher p-value : %f" % res)
+# p-value : 0.115216
+'''
 
 if len(sys.argv) != 3:
     print("Usage: python3 bench.py TESTNAME NGROUPS", file=sys.stderr)
@@ -211,6 +265,13 @@ def py_list(l):
         reversed(l),
         "Nil")
 
+def py_disj(l):
+    *l_except_last, last = l
+    return reduce(
+        lambda acc, x: f"Disj({x}, {acc})",
+        reversed(l_except_last),
+        last)
+
 fargs = ", ".join(f"d{i}" for i in groups)
 eq_d_scale = " = ".join(f"d{i}.scale" for i in groups)
 ml_mu_list = ml_list([f"t_mu{i}" for i in groups])
@@ -222,6 +283,13 @@ py_n_list = py_list([f"t_n{i}" for i in groups])
 py_d_list = py_list([f"d{i}" for i in groups])
 py_p_list = py_list([f"p{i}" for i in groups])
 
+py_exp_list = py_list([f"exp{i}" for i in groups])
+py_exp_disj = py_disj([f"sit(exp{i})" for i in groups])
+pv_fargs = ", ".join(f"pv{i} : real" for i in groups)
+pv_aargs = ", ".join(f"pv{i}" for i in groups)
+ml_pv_list = ml_list([f"pv{i}" for i in groups])
+py_pv_list = py_list([f"pv{i}" for i in groups])
+
 result = template.render(groups=groups,
                          fargs=fargs,
                          eq_d_scale=eq_d_scale,
@@ -232,7 +300,13 @@ result = template.render(groups=groups,
                          py_add_r=py_add_r,
                          py_n_list=py_n_list,
                          py_d_list=py_d_list,
-                         py_p_list=py_p_list)
+                         py_p_list=py_p_list,
+                         py_exp_list=py_exp_list,
+                         py_exp_disj=py_exp_disj,
+                         pv_fargs=pv_fargs,
+                         pv_aargs=pv_aargs,
+                         ml_pv_list=ml_pv_list,
+                         py_pv_list=py_pv_list)
 
 fp = tempfile.NamedTemporaryFile(mode='w+', prefix="statwhy-py-bench.", suffix=".py", delete=False, delete_on_close=False)
 fp.write(result)
