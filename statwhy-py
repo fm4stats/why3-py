@@ -1,0 +1,4 @@
+#!/bin/sh
+
+./env-why3 why3 ide --extra-config $HOME/.statwhy.conf "$@"
+
