@@ -7,6 +7,11 @@ It supports the execution and verification of statistical Python programs.
 The original Why3 project is available at:
 https://www.why3.org/
 
+Author
+------
+
+Akira Tanaka and Yusuke Kawamoto at National Institute of Advanced Industrial Science and Technology (AIST)
+
 Installation
 ------------
 
@@ -66,6 +71,13 @@ This indicates that the verification has succeeded.
 ![](./doc-statwhy/figures/why3-py-verified.png?raw=true "The Why3 IDE screen: verification succeed.")
 
 More examples can be found in the `examples/statwhy-python/` directory.
+
+Copyright
+---------
+
+The modifications and additions specific to Why3-py are licensed under the GNU LGPL 2.1, the same license as Why3.
+
+See the accompanying LICENSE file for details.
 
 The original README.md of Why3 is follows:
 ====
