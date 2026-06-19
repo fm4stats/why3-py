@@ -1,6 +1,8 @@
 from typing import NamedTuple
 from typing import Any
 
+import numpy as np
+
 from scipy.stats import ttest_1samp
 from scipy.stats import ttest_rel
 from scipy.stats import ttest_ind
@@ -10,6 +12,10 @@ from scipy.stats import f_oneway
 from scipy.stats import chi2_contingency
 
 from scikit_posthocs import posthoc_dscf # type: ignore
+
+from scipy.stats import combine_pvalues
+
+import statsmodels.stats.api as smstats
 
 # cameleer/statwhy/lib/logicalFormula.mlw
 #   type scale =
@@ -55,6 +61,11 @@ string = str
 parameter = string
 
 real = float
+
+# cameleer/statwhy/lib/logicalFormula.mlw
+# type pvalue = Eq real | Leq real
+class pvalue :
+    pass
 
 # cameleer/statwhy/lib/logicalFormula.mlw
 # type real_number = Param parameter | Const real
@@ -104,6 +115,50 @@ def CategoricalD(x : list[real_number]) -> distribution :
 def UnknownD(x : string) -> distribution :
     return distribution()
 
+# type atomic_formula = Pred psymb (list term)
+
+class atomic_formula :
+    pass
+
+# type formula = Atom atomic_formula | Not formula
+#              | Conj formula formula | Disj formula formula
+#              | Impl formula formula | Equiv formula formula
+#              | Possible formula | Know formula
+#              | StatTau pvalue formula | StatB pvalue formula
+
+class formula :
+    pass
+
+def Atom(a : atomic_formula) -> formula :
+    return formula()
+
+def Not(f : formula) -> formula :
+    return formula()
+
+def Conj(f1 : formula, f2 : formula) -> formula :
+    return formula()
+
+def Disj(f1 : formula, f2 : formula) -> formula :
+    return formula()
+
+def Impl(f1 : formula, f2 : formula) -> formula :
+    return formula()
+
+def Equiv(f1 : formula, f2 : formula) -> formula :
+    return formula()
+
+def Possible(f : formula) -> formula :
+    return formula()
+
+def Know(f : formula) -> formula :
+    return formula()
+
+def StatTau(p : pvalue, f : formula) -> formula :
+    return formula()
+
+def StatB(p : pvalue, f : formula) -> formula :
+    return formula()
+
 # cameleer/statwhy/lib/statBHL.mlw
 #
 #   type alternative = Two | Up | Low
@@ -115,6 +170,16 @@ class alternative :
 Two = alternative("two-sided")
 Up = alternative("greater")
 Low = alternative("less")
+
+# cameleer/statwhy/lib/combine_pvs.mlw :
+# type experiment = real
+# let function sit (exp: experiment) : formula =
+#    Atom (Pred "situation" (Cons (RealT (Real (Const exp))) Nil))
+
+experiment = real
+
+def sit(exp : experiment) -> formula :
+    return formula()
 
 def exec_ttest_1samp(p : distribution, mu : real, y : dataset[real], alt : alternative) -> real :
     return float(ttest_1samp(y.data, mu, alternative=alt.alt_string).pvalue)
@@ -153,4 +218,32 @@ def exec_oneway_ANOVA(ds : list[distribution], ys : list[dataset[real]]) -> real
 def exec_chi2_contingency(d1 : distribution, d2 : distribution, yy : dataset[list[int]], correction : bool) -> real :
     return chi2_contingency(yy.data, correction).pvalue
 
+def exec_combine_pvs_fisher(pvs : list[real], exps : list[experiment], disj_exp : formula, fml : formula) -> real :
+    return combine_pvalues(pvs, method='fisher').pvalue
+
+def exec_combine_pvs_pearson(pvs : list[real], exps : list[experiment], disj_exp : formula, fml : formula) -> real :
+    return combine_pvalues(pvs, method='pearson').pvalue
+
+def exec_combine_pvs_MudholkarGeorge(pvs : list[real], exps : list[experiment], disj_exp : formula, fml : formula) -> real :
+    return combine_pvalues(pvs, method='mudholkar_george').pvalue
+
+def exec_combine_pvs_stouffer_Two(pvs : list[real], exps : list[experiment], disj_exp : formula, fml : formula) -> real :
+    pvs = [pv / 2.0 for pv in pvs]
+    return combine_pvalues(pvs, method='stouffer').pvalue * 2
+
+def exec_combine_pvs_stouffer_One(pvs : list[real], exps : list[experiment], disj_exp : formula, fml : formula) -> real :
+    return combine_pvalues(pvs, method='stouffer').pvalue
+
+def exec_combine_pvs_weighted_stouffer_Two(pvs : list[real], exps : list[experiment], disj_exp : formula, ss : list[int], fml : formula) -> real :
+    pvs = [pv / 2.0 for pv in pvs]
+    return combine_pvalues(pvs, method='stouffer', weights=ss).pvalue * 2
+
+def exec_combine_pvs_weighted_stouffer_One(pvs : list[real], exps : list[experiment], disj_exp : formula, ss : list[int], fml : formula) -> real :
+    return combine_pvalues(pvs, method='stouffer', weights=ss).pvalue
+
+# cameleer/statwhy/lib/meta_pvs_MantelHaenszel.mlw
+ctable = list[list[real]]
+def exec_Mantel_Haenszel(dist : distribution, ys : list[ctable], alt : alternative) -> real :
+    st = smstats.StratifiedTable(np.array(ys).transpose(1, 2, 0).astype(np.float64))
+    return st.test_equal_odds().pvalue
 
