@@ -67,7 +67,6 @@ This indicates that the verification has succeeded.
 
 More examples can be found in the `examples/statwhy-python/` directory.
 
-====
 The original README.md of Why3 is follows:
 ====
 
