@@ -21,19 +21,18 @@ disj_exps : formula = Disj(sit(exp1), Disj(sit(exp2), sit(exp3)))
 # Executes Stouffer's method for combining 3 two-sided p-values.
 def ex_combine_pvs_stouffer_Two(pv1: real, pv2 : real, pv3 : real, fml: formula) -> real :
     #@  requires \
-    #@    let pvs = Cons pv1 (Cons pv2 (Cons pv3 Nil)) in \
+    #@    let pvs  = Cons pv1 (Cons pv2 (Cons pv3 Nil)) in \
+    #@    pvalues pvs /\ \
     #@    difficult_to_define_appropriate_weights /\ \
     #@    let d : dataset real = { data = pvs; scale = Interval } in \
     #@    sampled d uniform_pv /\ (* Each p-value in d is sampled uniformly & independently. *) \
-    #@    length pvs > 0 /\ \
-    #@    pvalues pvs /\ \
-    #@    for_all2 (fun pv exp -> (exists w' : world. w' |= StatB (Eq pv) (Conj (sit exp) fml))) pvs exps
-    #      The statistical belief under the situation (sit exp) where each experiment exp has done.
+    #@    for_all2 (fun pv exp -> (exists w' : world. w' |= StatB (Eq pv) (Impl (sit exp) fml))) pvs exps
+    #       (* The statistical belief under the situation (sit exp) where each experiment exp has done. *)
 
     #@  ensures \
     #@    let result_pv = twice_pvalue result in \
     #@    pvalue result_pv /\ \
-    #@    (World !st interp |= StatB (Eq result_pv) fml)
+    #@    (World !st interp |= StatB (Eq result_pv) (Impl disj_exps fml))
 
     pvs = Cons(pv1, Cons(pv2, Cons(pv3, Nil)))
     return exec_combine_pvs_stouffer_Two(pvs, exps, disj_exps, fml)
@@ -41,17 +40,16 @@ def ex_combine_pvs_stouffer_Two(pv1: real, pv2 : real, pv3 : real, fml: formula)
 # Executes Stouffer's method for combining 3 upper-sided p-values.
 def ex_combine_pvs_stouffer_Up(pv1: real, pv2 : real, pv3 : real, fml: formula) -> real :
     #@  requires \
-    #@    let pvs = Cons pv1 (Cons pv2 (Cons pv3 Nil)) in \
+    #@    let pvs  = Cons pv1 (Cons pv2 (Cons pv3 Nil)) in \
+    #@    pvalues pvs /\ \
     #@    difficult_to_define_appropriate_weights /\ \
     #@    let d : dataset real = { data = pvs; scale = Interval } in \
     #@    sampled d uniform_pv /\ (* Each p-value in d is sampled uniformly & independently. *) \
-    #@    length pvs > 0 /\ \
-    #@    pvalues pvs /\ \
-    #@    for_all2 (fun pv exp -> (exists w' : world. w' |= StatB (Eq pv) (Conj (sit exp) fml))) pvs exps
+    #@    for_all2 (fun pv exp -> (exists w' : world. w' |= StatB (Eq pv) (Impl (sit exp) fml))) pvs exps
 
     #@  ensures \
     #@    pvalue result /\ \
-    #@    (World !st interp |= StatB (Eq result) fml)
+    #@    (World !st interp |= StatB (Eq result) (Impl disj_exps fml))
 
     pvs = Cons(pv1, Cons(pv2, Cons(pv3, Nil)))
     return exec_combine_pvs_stouffer_One(pvs, exps, disj_exps, fml)
@@ -59,17 +57,16 @@ def ex_combine_pvs_stouffer_Up(pv1: real, pv2 : real, pv3 : real, fml: formula) 
 # Executes Stouffer's method for combining 3 lower-sided p-values.
 def ex_combine_pvs_stouffer_Low(pv1 : real, pv2 : real, pv3 : real, fml: formula) -> real :
     #@  requires \
-    #@    let pvs = Cons pv1 (Cons pv2 (Cons pv3 Nil)) in \
+    #@    let pvs  = Cons pv1 (Cons pv2 (Cons pv3 Nil)) in \
+    #@    pvalues pvs /\ \
     #@    difficult_to_define_appropriate_weights /\ \
     #@    let d : dataset real = { data = pvs; scale = Interval } in \
     #@    sampled d uniform_pv /\ (* Each p-value in d is sampled uniformly & independently. *) \
-    #@    length pvs > 0 /\ \
-    #@    pvalues pvs /\ \
-    #@    for_all2 (fun pv exp -> (exists w' : world. w' |= StatB (Eq pv) (Conj (sit exp) fml))) pvs exps
+    #@    for_all2 (fun pv exp -> (exists w' : world. w' |= StatB (Eq pv) (Impl (sit exp) fml))) pvs exps
 
     #@  ensures \
     #@    pvalue result /\ \
-    #@    (World !st interp |= StatB (Eq result) fml)
+    #@    (World !st interp |= StatB (Eq result) (Impl disj_exps fml))
 
     pvs = Cons(pv1, Cons(pv2, Cons(pv3, Nil)))
     return exec_combine_pvs_stouffer_One(pvs, exps, disj_exps, fml)
@@ -80,21 +77,19 @@ def ex_combine_pvs_stouffer_Low(pv1 : real, pv2 : real, pv3 : real, fml: formula
 # The square root of the sample size is used as the weight.
 def ex_combine_pvs_weighted_stouffer_Two(pv1 : real, size1 : int, pv2 : real, size2 : int, pv3 : real, size3 : int, fml: formula) -> real :
     #@  requires \
-    #@    let pvs = Cons pv1 (Cons pv2 (Cons pv3 Nil)) in \
-    #@    let ss  = Cons size1 (Cons size2 (Cons size3 Nil)) in \
+    #@    let pvs  = Cons pv1 (Cons pv2 (Cons pv3 Nil)) in \
+    #@    pvalues pvs /\ \
     #@    not difficult_to_define_appropriate_weights /\ \
+    #@    let ss  = Cons size1 (Cons size2 (Cons size3 Nil)) in \
+    #@    samplesizes ss /\ \
     #@    let d : dataset real = { data = pvs; scale = Interval } in \
     #@    sampled d uniform_pv /\ (* Each p-value in d is sampled uniformly & independently. *) \
-    #@    length pvs > 0 /\ \
-    #@    pvalues pvs /\ \
-    #@    length ss > 0 /\ \
-    #@    samplesizes ss /\ \
-    #@    for_all2 (fun pv exp -> (exists w' : world. w' |= StatB (Eq pv) (Conj (sit exp) fml))) pvs exps
+    #@    for_all2 (fun pv exp -> (exists w' : world. w' |= StatB (Eq pv) (Impl (sit exp) fml))) pvs exps
 
     #@  ensures \
     #@    let result_pv = twice_pvalue result in \
     #@    pvalue result_pv /\ \
-    #@    (World !st interp |= StatB (Eq result_pv) fml)
+    #@    (World !st interp |= StatB (Eq result_pv) (Impl disj_exps fml))
 
     pvs = Cons(pv1, Cons(pv2, Cons(pv3, Nil)))
     ss = Cons(size1, Cons(size2, Cons(size3, Nil)))
@@ -104,20 +99,18 @@ def ex_combine_pvs_weighted_stouffer_Two(pv1 : real, size1 : int, pv2 : real, si
 # The square root of the sample size is used as the weight.
 def ex_combine_pvs_weighted_stouffer_Up(pv1 : real, size1 : int, pv2 : real, size2 : int, pv3 : real, size3 : int, fml: formula) -> real :
     #@  requires \
-    #@    let pvs = Cons pv1 (Cons pv2 (Cons pv3 Nil)) in \
-    #@    let ss  = Cons size1 (Cons size2 (Cons size3 Nil)) in \
+    #@    let pvs  = Cons pv1 (Cons pv2 (Cons pv3 Nil)) in \
+    #@    pvalues pvs /\ \
     #@    not difficult_to_define_appropriate_weights /\ \
+    #@    let ss  = Cons size1 (Cons size2 (Cons size3 Nil)) in \
+    #@    samplesizes ss /\ \
     #@    let d : dataset real = { data = pvs; scale = Interval } in \
     #@    sampled d uniform_pv /\ (* Each p-value in d is sampled uniformly & independently. *) \
-    #@    length pvs > 0 /\ \
-    #@    pvalues pvs /\ \
-    #@    length ss > 0 /\ \
-    #@    samplesizes ss /\ \
-    #@    for_all2 (fun pv exp -> (exists w' : world. w' |= StatB (Eq pv) (Conj (sit exp) fml))) pvs exps
+    #@    for_all2 (fun pv exp -> (exists w' : world. w' |= StatB (Eq pv) (Impl (sit exp) fml))) pvs exps
 
     #@  ensures \
     #@    pvalue result /\ \
-    #@    (World !st interp |= StatB (Eq result) fml)
+    #@    (World !st interp |= StatB (Eq result) (Impl disj_exps fml))
 
     pvs = Cons(pv1, Cons(pv2, Cons(pv3, Nil)))
     ss = Cons(size1, Cons(size2, Cons(size3, Nil)))
@@ -127,20 +120,18 @@ def ex_combine_pvs_weighted_stouffer_Up(pv1 : real, size1 : int, pv2 : real, siz
 # The square root of the sample size is used as the weight.
 def ex_combine_pvs_weighted_stouffer_Low(pv1 : real, size1 : int, pv2 : real, size2 : int, pv3 : real, size3 : int, fml: formula) -> real :
     #@  requires \
-    #@    let pvs = Cons pv1 (Cons pv2 (Cons pv3 Nil)) in \
-    #@    let ss  = Cons size1 (Cons size2 (Cons size3 Nil)) in \
+    #@    let pvs  = Cons pv1 (Cons pv2 (Cons pv3 Nil)) in \
+    #@    pvalues pvs /\ \
     #@    not difficult_to_define_appropriate_weights /\ \
+    #@    let ss  = Cons size1 (Cons size2 (Cons size3 Nil)) in \
+    #@    samplesizes ss /\ \
     #@    let d : dataset real = { data = pvs; scale = Interval } in \
     #@    sampled d uniform_pv /\ (* Each p-value in d is sampled uniformly & independently. *) \
-    #@    length pvs > 0 /\ \
-    #@    pvalues pvs /\ \
-    #@    length ss > 0 /\ \
-    #@    samplesizes ss /\ \
-    #@    for_all2 (fun pv exp -> (exists w' : world. w' |= StatB (Eq pv) (Conj (sit exp) fml))) pvs exps
+    #@    for_all2 (fun pv exp -> (exists w' : world. w' |= StatB (Eq pv) (Impl (sit exp) fml))) pvs exps
 
     #@  ensures \
     #@    pvalue result /\ \
-    #@    (World !st interp |= StatB (Eq result) fml)
+    #@    (World !st interp |= StatB (Eq result) (Impl disj_exps fml))
 
     pvs = Cons(pv1, Cons(pv2, Cons(pv3, Nil)))
     ss = Cons(size1, Cons(size2, Cons(size3, Nil)))
@@ -152,13 +143,11 @@ def ex_combine_pvs_weighted_stouffer_Low(pv1 : real, size1 : int, pv2 : real, si
 pv1 : real = 0.1
 pv2 : real = 0.2
 pv3 : real = 0.3
-pvs = Cons(pv1, Cons(pv2, Cons(pv3, Nil)))
 
 # The 3 experiments' samples sizes, which are used as weights
 size1 : int = 10
 size2 : int = 15
 size3 : int = 20
-ss = Cons(size1, Cons(size2, Cons(size3, Nil)))
 
 # The dummy alternative hypothesis
 fml = formula()

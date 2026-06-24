@@ -18,18 +18,17 @@ disj_exps : formula = Disj(sit(exp1), Disj(sit(exp2), sit(exp3)))
 # Executes Pearson's method for combining 3 p-values.
 def ex_combine_pvs_pearson(pv1 : real, pv2 : real, pv3 : real, fml: formula) -> real :
     #@    requires \
-    #@      let pvs = Cons pv1 (Cons pv2 (Cons pv3 Nil)) in \
-    #@      intend_to_detect_excess_of_large_pv /\ \
+    #@      let pvs  = Cons pv1 (Cons pv2 (Cons pv3 Nil)) in \
+    #@      pvalues pvs /\ \
     #@      let d : dataset real = { data = pvs; scale = Interval } in \
     #@      sampled d uniform_pv /\ (* Each p-value in d is sampled uniformly & independently. *) \
-    #@      length pvs > 0 /\ \
-    #@      pvalues pvs /\ \
-    #@      for_all2 (fun pv exp -> (exists w' : world. w' |= StatB (Eq pv) (Conj (sit exp) fml))) pvs exps
-    #         The statistical belief under the situation (sit exp) where each experiment exp has done.
+    #@      intend_to_detect_excess_of_large_pv /\ \
+    #@      (* The statistical belief on fml under the situation (sit exp) where each experiment exp has done. *) \
+    #@      for_all2 (fun pv exp -> (exists w' : world. w' |= StatB (Eq pv) (Impl (sit exp) fml))) pvs exps
 
     #@    ensures \
     #@      pvalue result /\ \
-    #@      (World !st interp |= StatB (Eq result) fml)
+    #@      (World !st interp |= StatB (Eq result) (Impl disj_exps fml))
 
     pvs = Cons(pv1, Cons(pv2, Cons(pv3, Nil)))
     return exec_combine_pvs_pearson(pvs, exps, disj_exps, fml)
