@@ -190,7 +190,7 @@ from statwhy import exec_combine_pvs_fisher
 #@ use combine_pvs.CombinePVs
 #@ use list.Map
 
-# The ID numbers for 3 experiments
+# The ID numbers for experiments
 {% for i in groups %}
 exp{{i}} : real = {{i}}.0
 {% endfor %}
@@ -199,24 +199,21 @@ exps : list[real] = {{py_exp_list}}
 # The disjunctive formula representing one of the three situations
 disj_exps : formula = {{py_exp_disj}}
 
-# Executes Fisher's method for combining 3 p-values.
+# Executes Fisher's method for combining p-values.
 
 def ex_combine_pvs_fisher({{pv_fargs}}, fml: formula) -> real :
     #@  requires \
     #@    let pvs = {{ml_pv_list}} in \
-    #@    intend_to_detect_excess_of_small_pv /\ \
+    #@    pvalues pvs /\ \
     #@    let d : dataset real = { data = pvs; scale = Interval } in \
     #@    sampled d uniform_pv /\ (* Each p-value in d is sampled uniformly & independently. *) \
-    #@    length pvs > 0 /\ \
-    #@    pvalues pvs /\ \
-    #@    for_all2 (fun pv exp -> (exists w' : world. w' |= StatB (Eq pv) (Conj (sit exp) fml))) pvs exps
-    #       The statistical belief under the situation (sit exp) where each experiment exp has done. *)
-    #  (* for_all (fun exp -> (World !st interp |= (Impl (sit exp) disj_exps))) exps /\
-    #     for_all (fun exp -> (World !st interp |= (Impl (Disj disj_exps (sit exp)) disj_exps))) exps *)
+    #@    intend_to_detect_excess_of_small_pv /\ \
+    #@    (* The statistical belief on fml under the situation (sit exp) where each experiment exp has done. *) \
+    #@    for_all2 (fun pv exp -> (exists w' : world. w' |= StatB (Eq pv) (Impl (sit exp) fml))) pvs exps
 
     #@  ensures \
     #@    pvalue result /\ \
-    #@    (World !st interp |= StatB (Eq result) (Conj  disj_exps fml))
+    #@    (World !st interp |= StatB (Eq result) (Impl disj_exps fml))
 
     pvs = {{py_pv_list}}
     return exec_combine_pvs_fisher(pvs, exps, disj_exps, fml)
