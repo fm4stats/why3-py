@@ -49,21 +49,21 @@ After installation, examples can be run as follows.
 (`env-why3` and `statwhy-py` must be executed from the Why3-py source directory.)
 
 ```
-% ./env-why3 python3 examples/statwhy-python/meta/ex_combine_pvs_fisher.py
-ex_combine_pvs_fisher p-value : 0.115216
+% ./env-why3 python3 examples/statwhy-python/example0_meta_pv.py
+eg_meta_pvs_fisher p-value : 0.115216
 ```
 
 Verification can be started with the `./statwhy-py` command.
 This starts the IDE of Why3.
 
 ```
-% ./statwhy-py examples/statwhy-python/meta/ex_combine_pvs_fisher.py
+% ./statwhy-py examples/statwhy-python/example0_meta_pv.py
 ```
 
 ![](./doc-statwhy/figures/why3-py-start.png?raw=true "The Why3 IDE screen at start.")
 
 Verification in Why3-py (and StatWhy) is performed by selecting the `StatWhy` item from the context menu of the root node in the left pane.
-The context menu is shown by Right-Click at the root node (shown as question mark and "ex\_combine\_pvs\_fisher.py").
+The context menu is shown by Right-Click at the root node (shown as question mark and "example0\_meta\_pv.py").
 
 All descendants are folded, and the question mark changes to a green check mark.
 This indicates that the verification has succeeded.
