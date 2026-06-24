@@ -219,6 +219,47 @@ def ex_combine_pvs_fisher({{pv_fargs}}, fml: formula) -> real :
     return exec_combine_pvs_fisher(pvs, exps, disj_exps, fml)
 '''
 
+template_dict['combine_pvs_weighted_stouffer_Two'] = r'''
+from statwhy import Nil, Cons, array, string, NormalD, UnknownD, Param, Const, real, Two
+from statwhy import formula, Disj, sit
+from statwhy import exec_combine_pvs_weighted_stouffer_Two
+
+#@ use cameleerBHL.CameleerBHL
+#@ use combine_pvs.CombinePVs
+#@ use list.Map
+
+# The ID numbers for experiments
+{% for i in groups %}
+exp{{i}} : real = {{i}}.0
+{% endfor %}
+exps : list[real] = {{py_exp_list}}
+
+# The disjunctive formula representing one of the three situations
+disj_exps : formula = {{py_exp_disj}}
+
+# Executes weighted Stouffer's method for combining 3 two-sided p-values.
+# The square root of the sample size is used as the weight.
+def ex_combine_pvs_weighted_stouffer_Two({{pv_size_fargs}}, fml: formula) -> real :
+    #@  requires \
+    #@    let pvs = {{ml_pv_list}} in \
+    #@    pvalues pvs /\ \
+    #@    not difficult_to_define_appropriate_weights /\ \
+    #@    let ss = {{ml_size_list}} in \
+    #@    samplesizes ss /\ \
+    #@    let d : dataset real = { data = pvs; scale = Interval } in \
+    #@    sampled d uniform_pv /\ (* Each p-value in d is sampled uniformly & independently. *) \
+    #@    for_all2 (fun pv exp -> (exists w' : world. w' |= StatB (Eq pv) (Impl (sit exp) fml))) pvs exps
+
+    #@  ensures \
+    #@    let result_pv = twice_pvalue result in \
+    #@    pvalue result_pv /\ \
+    #@    (World !st interp |= StatB (Eq result_pv) (Impl disj_exps fml))
+
+    pvs = {{py_pv_list}}
+    ss = {{py_size_list}}
+    return exec_combine_pvs_weighted_stouffer_Two(pvs, exps, disj_exps, ss, fml)
+'''
+
 if len(sys.argv) != 3:
     print("Usage: python3 bench.py TESTNAME NGROUPS", file=sys.stderr)
     print("Example: python3 bench.py tukey_hsd 3", file=sys.stderr)
@@ -272,6 +313,9 @@ pv_fargs = ", ".join(f"pv{i} : real" for i in groups)
 pv_aargs = ", ".join(f"pv{i}" for i in groups)
 ml_pv_list = ml_list([f"pv{i}" for i in groups])
 py_pv_list = py_list([f"pv{i}" for i in groups])
+pv_size_fargs = ", ".join(f"pv{i} : real, size{i} : int" for i in groups)
+ml_size_list = ml_list([f"size{i}" for i in groups])
+py_size_list = py_list([f"size{i}" for i in groups])
 
 result = template.render(groups=groups,
                          fargs=fargs,
@@ -289,7 +333,10 @@ result = template.render(groups=groups,
                          pv_fargs=pv_fargs,
                          pv_aargs=pv_aargs,
                          ml_pv_list=ml_pv_list,
-                         py_pv_list=py_pv_list)
+                         py_pv_list=py_pv_list,
+                         pv_size_fargs=pv_size_fargs,
+                         ml_size_list=ml_size_list,
+                         py_size_list=py_size_list)
 
 fp = tempfile.NamedTemporaryFile(mode='w+', prefix="statwhy-py-bench.", suffix=".py", delete=False, delete_on_close=False)
 fp.write(result)
