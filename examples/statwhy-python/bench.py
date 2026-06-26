@@ -372,6 +372,49 @@ def ex_combine_pvs_weighted_stouffer_Two({{pv_size_fargs}}, fml: formula) -> rea
     return exec_combine_pvs_weighted_stouffer_Two(pvs, exps, disj_exps, ss, fml)
 '''
 
+# This does not depends on number of experiments.
+template_dict['Mantel_Haenszel_Two'] = r'''
+from statwhy import UnknownD, real, Two, Up, Low
+from statwhy import distribution
+from statwhy import ctable
+from statwhy import exec_Mantel_Haenszel
+
+#@ use cameleerBHL.CameleerBHL
+#@ use combine_pvs.CombinePVs
+#@ use meta_pvs_MantelHaenszel.PV_MetaAnalyses
+#@ use list.Map
+
+# Executes Mantel-Haenszel's method to combine experiments with two-sided p-values.
+def ex_Mantel_Haenszel_Two(dist : distribution, ys : list[ctable]) -> real :
+    #@ requires \
+    #@   is_empty !st /\ \
+    #@   independently_sampled ys /\ (* The strata in ys are independent of each other. *) \
+    #@   length ys > 0 /\ all_matrix2x2 ys /\ \
+    #@   for_all (fun y -> \
+    #@            let d = { data = y; scale = Interval } in \
+    #@            sampled d dist) ys /\ \
+    #@   for_all (fun t -> \
+    #@            exists th : ctable.  (World !st interp) |= (odds_ratio th $= odds_ratio t)) \
+    #@           ys /\ (* The odds ratios for all strata are identical. *) \
+    #@   for_all (fun th -> \
+    #@            ((World !st interp) |= Possible (odds_ratio th $< const_term 1.0) /\ \
+    #@             (World !st interp) |= Possible (odds_ratio th $> const_term 1.0))) \
+    #@           ys
+
+    #@ ensures \
+    #@   let pv = result in \
+    #@   pvalue pv /\ \
+    #@   let th = \
+    #@     match ys with \
+    #@     | Cons hd _ -> hd \
+    #@     | Nil -> Nil \
+    #@     end in \
+    #@   Eq pv = compose_pvs (odds_ratio th $!= const_term 1.0) !st && \
+    #@   (World !st interp) |= StatB (Eq pv) (odds_ratio th $!= const_term 1.0)
+
+    return exec_Mantel_Haenszel(dist, ys, Two)
+'''
+
 if len(sys.argv) != 3:
     print("Usage: python3 bench.py TESTNAME NGROUPS", file=sys.stderr)
     print("Example: python3 bench.py tukey_hsd 3", file=sys.stderr)
