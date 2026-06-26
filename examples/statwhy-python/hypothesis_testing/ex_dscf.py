@@ -1,8 +1,8 @@
 from statwhy import Nil, Cons, array, string, NormalD, UnknownD, Param, Const, real, Two, dataset, Interval
-from statwhy import exec_steel_dwass
+from statwhy import exec_steel_dscf
 
 #@ use cameleerBHL.CameleerBHL
-#@ use steel_dwass.Steel_Dwass
+#@ use steel_dscf.Steel_DSCF
 #@ use array.Array
 
 p1 = UnknownD("p1")
@@ -36,8 +36,7 @@ def ex_dscf3(d1, d2, d3) -> array[real] :
     #@              (World !st interp |= StatB (Eq (ps[i])) fml)) \
     #@            (enumerate (combinations terms3 "!=") 0)
 
-    # StatWhy's exec_steel_dwass can be used as DSCF test.
-    return exec_steel_dwass(Cons(p1, Cons(p2, Cons(p3, Nil))), Cons(d1, Cons(d2, Cons(d3, Nil))))
+    return exec_steel_dscf(Cons(p1, Cons(p2, Cons(p3, Nil))), Cons(d1, Cons(d2, Cons(d3, Nil))))
 
 #@ execution
 

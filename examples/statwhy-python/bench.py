@@ -100,10 +100,10 @@ def ex_dunnett({{fargs}}, c) -> array[real] :
 
 template_dict['dscf'] = r'''
 from statwhy import Nil, Cons, array, string, NormalD, UnknownD, Param, Const, real, Two, dataset, Interval
-from statwhy import exec_steel_dwass
+from statwhy import exec_steel_dscf
 
 #@ use cameleerBHL.CameleerBHL
-#@ use steel_dwass.Steel_Dwass
+#@ use steel_dscf.Steel_DSCF
 #@ use array.Array
 
 {% for i in groups %}
@@ -138,8 +138,7 @@ def ex_dscf({{fargs}}) -> array[real] :
     #@              (World !st interp |= StatB (Eq (ps[i])) fml)) \
     #@            (enumerate (combinations terms "!=") 0)
 
-    # StatWhy's exec_steel_dwass can be used as DSCF test.
-    return exec_steel_dwass({{py_p_list}}, {{py_d_list}})
+    return exec_steel_dscf({{py_p_list}}, {{py_d_list}})
 '''
 
 template_dict['bonferroni'] = r'''
