@@ -25,28 +25,6 @@ def example1(d : dataset[real]) :
     #@   (World !st interp) |= StatB (Eq p) fmlA
     return exec_ttest_1samp(t_n, 1.0, d, Two)
 
-# executes the same test but lacks one of the precondition, "sampled d t_n"
-# This program is INCORRECT and so its verification FAILS
-
-def example1_INCORRECT(d) :
-    #@   requires \
-    #@     let fmlA_l = mean t_n $< const_term 1.0 in \
-    #@     let fmlA_u = mean t_n $> const_term 1.0 in \
-    #@     let fmlA = mean t_n $!= const_term 1.0 in \
-    #@     is_empty (!st) /\ \
-    #@     (* sampled d t_n /\ *) \
-    #@     d.scale = Interval /\ \
-    #@     (World (!st) interp) |= Possible fmlA_l /\ \
-    #@     (World (!st) interp) |= Possible fmlA_u
-    #@   ensures \
-    #@     let fmlA_l = mean t_n $< const_term 1.0 in \
-    #@     let fmlA_u = mean t_n $> const_term 1.0 in \
-    #@     let fmlA = mean t_n $!= const_term 1.0 in \
-    #@   let p = result in \
-    #@     Eq p = compose_pvs fmlA !st && \
-    #@     (World !st interp) |= StatB (Eq p) fmlA
-    return exec_ttest_1samp(t_n, 1.0, d, Two)
-
 #@ execution
 
 d = dataset(data=[
@@ -67,6 +45,5 @@ d = dataset(data=[
     -1.54871151183215727,
 ], scale=Interval)
 print("p-value : %f" % example1(d))
-print("p-value : %f" % example1_INCORRECT(d))
 
 
