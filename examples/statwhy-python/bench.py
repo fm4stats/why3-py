@@ -196,7 +196,7 @@ exp{{i}} : real = {{i}}.0
 {% endfor %}
 exps : list[real] = {{py_exp_list}}
 
-# The disjunctive formula representing one of the three situations
+# The disjunctive formula representing one of the situations
 disj_exps : formula = {{py_exp_disj}}
 
 # Executes Fisher's method for combining p-values.
@@ -219,6 +219,43 @@ def ex_combine_pvs_fisher({{pv_fargs}}, fml: formula) -> real :
     return exec_combine_pvs_fisher(pvs, exps, disj_exps, fml)
 '''
 
+template_dict['combine_pvs_pearson'] = r'''
+from statwhy import Nil, Cons, real
+from statwhy import formula, Disj, sit
+from statwhy import exec_combine_pvs_pearson
+
+#@ use cameleerBHL.CameleerBHL
+#@ use combine_pvs.CombinePVs
+#@ use list.Map
+
+# The ID numbers for experiments
+{% for i in groups %}
+exp{{i}} : real = {{i}}.0
+{% endfor %}
+exps : list[real] = {{py_exp_list}}
+
+# The disjunctive formula representing one of the situations
+disj_exps : formula = {{py_exp_disj}}
+
+# Executes Pearson's method for combining p-values.
+def ex_combine_pvs_pearson({{pv_fargs}}, fml: formula) -> real :
+    #@    requires \
+    #@      let pvs = {{ml_pv_list}} in \
+    #@      pvalues pvs /\ \
+    #@      let d : dataset real = { data = pvs; scale = Interval } in \
+    #@      sampled d uniform_pv /\ (* Each p-value in d is sampled uniformly & independently. *) \
+    #@      intend_to_detect_excess_of_large_pv /\ \
+    #@      (* The statistical belief on fml under the situation (sit exp) where each experiment exp has done. *) \
+    #@      for_all2 (fun pv exp -> (exists w' : world. w' |= StatB (Eq pv) (Impl (sit exp) fml))) pvs exps
+
+    #@    ensures \
+    #@      pvalue result /\ \
+    #@      (World !st interp |= StatB (Eq result) (Impl disj_exps fml))
+
+    pvs = {{py_pv_list}}
+    return exec_combine_pvs_pearson(pvs, exps, disj_exps, fml)
+'''
+
 template_dict['combine_pvs_weighted_stouffer_Two'] = r'''
 from statwhy import Nil, Cons, array, string, NormalD, UnknownD, Param, Const, real, Two
 from statwhy import formula, Disj, sit
@@ -234,10 +271,10 @@ exp{{i}} : real = {{i}}.0
 {% endfor %}
 exps : list[real] = {{py_exp_list}}
 
-# The disjunctive formula representing one of the three situations
+# The disjunctive formula representing one of the situations
 disj_exps : formula = {{py_exp_disj}}
 
-# Executes weighted Stouffer's method for combining 3 two-sided p-values.
+# Executes weighted Stouffer's method for combining two-sided p-values.
 # The square root of the sample size is used as the weight.
 def ex_combine_pvs_weighted_stouffer_Two({{pv_size_fargs}}, fml: formula) -> real :
     #@  requires \
