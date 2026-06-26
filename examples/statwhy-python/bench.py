@@ -418,7 +418,9 @@ def ex_Mantel_Haenszel_Two(dist : distribution, ys : list[ctable]) -> real :
 if len(sys.argv) != 3:
     print("Usage: python3 bench.py TESTNAME NGROUPS", file=sys.stderr)
     print("Example: python3 bench.py tukey_hsd 3", file=sys.stderr)
-    print(f"Supported Tests: {" ".join(template_dict.keys())}", file=sys.stderr)
+    print("Supported Tests:", file=sys.stderr)
+    for k in template_dict:
+        print(f"  {k}", file=sys.stderr)
     sys.exit(1)
 
 testname = sys.argv[1]
