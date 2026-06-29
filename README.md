@@ -40,6 +40,7 @@ This software is tested with Debian GNU/Linux 13 (trixie).
 % git clone https://github.com/fm4stats/why3-py.git
 % cd why3-py
 % ./statwhy-install.sh $HOME/statwhy statwhy
+% eval $(opam env)
 ```
 
 Example
