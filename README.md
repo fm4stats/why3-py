@@ -1,7 +1,7 @@
 WHY3-PY
 ====
 
-Why3-py is a modified version of the Why3 verification platform developed for StatWhy.
+Why3-py is a modified version of the Why3 verification platform developed for Python statistical code.
 It supports the execution and verification of statistical Python programs.
 
 The original Why3 project is available at:
@@ -12,13 +12,30 @@ Author
 
 Akira Tanaka and Yusuke Kawamoto at National Institute of Advanced Industrial Science and Technology (AIST)
 
+
+Structure of the repository
+---------------------------
+```
+Why3-py/
+├ README.md                        this file
+├ statwhy-install.sh               Why3-py installation script
+├ statwhy-py                       Launcher for Why3-py
+├ env-why3                         Script to define environment variables
+├ plugins/                         Plugins
+│ └ python/                        Why3-py Python plugin
+│ └ ...
+├ examples/                        Examples
+│ └ statwhy-python/                Why3 examples
+│ └ ...
+├ doc-statwhy/                     Why3-py documents
+└ ...
+```
+
+
 Installation
 ------------
 
 Why3-py installs its dependencies (Python, mypy, etc.) into a dedicated directory. It also creates a dedicated opam switch.
-In the last command, `./statwhy-install.sh $HOME/statwhy statwhy`, `$HOME/statwhy` specifies the installation directory and `statwhy` specifies the name of the opam switch.
-
-This software is tested with Debian GNU/Linux 13 (trixie).
 
 ```
 % sudo apt-get install \
@@ -43,35 +60,47 @@ This software is tested with Debian GNU/Linux 13 (trixie).
 % eval $(opam env)
 ```
 
+In the command `./statwhy-install.sh $HOME/statwhy statwhy`, the path `$HOME/statwhy` specifies the installation directory and `statwhy` specifies the name of the opam switch.
+
+This software has been tested with Debian GNU/Linux 13 (trixie).
+
+
 Example
 -------
 
-After installation, examples can be run as follows.
+After installation, we can execute the first Python example code to compute the combined $p$-value as follows:
 (`env-why3` and `statwhy-py` must be executed from the Why3-py source directory.)
 
 ```
+% cd why3-py/
 % ./env-why3 python3 examples/statwhy-python/example0_meta_pv.py
 eg_meta_pvs_fisher p-value : 0.115216
 ```
+We remark that `env-why3` must be executed at the Why3-py source directory.
+The first execution of the tool takes longer time, but subsequent runs can be faster as they reuse cached information.
 
-Verification can be started with the `./statwhy-py` command.
-This starts the IDE of Why3.
+Next, we can formally verify Python code via our [StatWhy](https://github.com/fm4stats/statwhy) tool using the `./statwhy-py` command.
 
 ```
 % ./statwhy-py examples/statwhy-python/example0_meta_pv.py
 ```
+where the `statwhy-py` command must also be executed at the Why3-py source directory.
+
+
+Then this launches the IDE of Why3 as follows:
 
 ![](./doc-statwhy/figures/why3-py-start.png?raw=true "The Why3 IDE screen at start.")
 
-Verification in Why3-py (and StatWhy) is performed by selecting the `StatWhy` item from the context menu of the root node in the left pane.
-The context menu is shown by Right-Click at the root node (shown as question mark and "example0\_meta\_pv.py").
 
-All descendants are folded, and the question mark changes to a green check mark.
-This indicates that the verification has succeeded.
+In the left pane, there is a single verification condition (VC) to be discharged: `main'vc` (the VC for `Example0_meta_pv`), which is equipped with a question mark.
+Right-click on this goal and select 'StatWhy' (Not 'CVC5' or the other items) from the context menu, or press '4'.
+Then StatWhy 1.4 performs the formal verification of the goal.
+If the prover successfully verifies the goal, all descendants of the goal are folded and a green check mark will appear as follows:
 
 ![](./doc-statwhy/figures/why3-py-verified.png?raw=true "The Why3 IDE screen: verification succeed.")
 
 More examples can be found in the `examples/statwhy-python/` directory.
+
 
 Copyright
 ---------
