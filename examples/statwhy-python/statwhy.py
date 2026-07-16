@@ -6,10 +6,14 @@ import numpy as np
 from scipy.stats import ttest_1samp
 from scipy.stats import ttest_rel
 from scipy.stats import ttest_ind
+from scipy.stats import binomtest
+from scipy.stats import chisquare
+from scipy.stats import chi2_contingency
+from scipy.stats import bartlett
+from scipy.stats import levene
 from scipy.stats import tukey_hsd
 from scipy.stats import dunnett
 from scipy.stats import f_oneway
-from scipy.stats import chi2_contingency
 
 from scikit_posthocs import posthoc_dscf # type: ignore
 
@@ -181,23 +185,39 @@ experiment = real
 def sit(exp : experiment) -> formula :
     return formula()
 
-def exec_ttest_1samp(p : distribution, mu : real, y : dataset[real], alt : alternative) -> real :
-    return float(ttest_1samp(y.data, mu, alternative=alt.alt_string).pvalue)
-
-def exec_ttest_paired(d1 : distribution, d2 : distribution, y1 : dataset[real], y2 : dataset[real], alt=alternative) -> real :
-    return ttest_rel(y1.data, y2.data, alternative=alt.alt_string).pvalue
-
-def exec_ttest_ind_eq(d1 : distribution, d2 : distribution, y1 : dataset[real], y2 : dataset[real], alt : alternative) -> real :
-    return ttest_ind(y1.data, y2.data, equal_var=True, alternative=alt.alt_string).pvalue
-
-def exec_ttest_ind_neq(d1 : distribution, d2 : distribution, y1 : dataset[real], y2 : dataset[real], alt : alternative) -> real :
-    return ttest_ind(y1.data, y2.data, equal_var=False, alternative=alt.alt_string).pvalue
-
 def flatten(lists):
     result = []
     for n, l in enumerate(lists):
         result.extend(l[1+n:])
     return result
+
+def exec_ttest_1samp(p : distribution, mu : real, y : dataset[real], alt : alternative) -> real :
+    return float(ttest_1samp(y.data, mu, alternative=alt.alt_string).pvalue)
+
+def exec_ttest_paired(d1 : distribution, d2 : distribution, y1 : dataset[real], y2 : dataset[real], alt=alternative) -> real :
+    return float(ttest_rel(y1.data, y2.data, alternative=alt.alt_string).pvalue)
+
+def exec_ttest_ind_eq(d1 : distribution, d2 : distribution, y1 : dataset[real], y2 : dataset[real], alt : alternative) -> real :
+    return float(ttest_ind(y1.data, y2.data, equal_var=True, alternative=alt.alt_string).pvalue)
+
+def exec_ttest_ind_neq(d1 : distribution, d2 : distribution, y1 : dataset[real], y2 : dataset[real], alt : alternative) -> real :
+    return float(ttest_ind(y1.data, y2.data, equal_var=False, alternative=alt.alt_string).pvalue)
+
+def exec_binom_test(d : distribution, p0 : real, y : dataset[int], alt : alternative) -> real:
+    cnt = sum(y.data)
+    size = len(y.data)
+    return float(binomtest(k=cnt, n=size, p=p0, alternative=alt.alt_string).pvalue)
+
+def exec_ftest(p1 : distribution, p2 : distribution, d1 : dataset[real], d2 : dataset[real], alt : alternative) -> real:
+    return float(bartlett(d1.data, d2.data).pvalue)
+
+def exec_bartlett(ps : list[distribution], ds : list[dataset[real]]) -> real:
+    return float(bartlett(*[d.data for d in ds]).pvalue)
+
+def exec_levene(ps : list[distribution], ds : list[dataset[real]]) -> real:
+    return float(levene(*[d.data for d in ds]).pvalue)
+
+
 
 def exec_tukey_hsd(d : distribution, xs : list[dataset[real]]) -> list[real] :
     result = tukey_hsd(*[x.data for x in xs])
@@ -217,6 +237,13 @@ def exec_steel(dists : list[distribution], control_dist : distribution, ys : lis
 
 def exec_oneway_ANOVA(ds : list[distribution], ys : list[dataset[real]]) -> real :
     return float(f_oneway(*[y.data for y in ys]).pvalue)
+
+
+
+def exec_chisquare_test(p : distribution, qs : list[real], d : dataset[int]) -> real :
+    n = sum(d.data)
+    expected = [float(p) * n for p in qs]
+    return float(chisquare(f_obs=d.data, f_exp=expected).pvalue)
 
 def exec_chi2_contingency(d1 : distribution, d2 : distribution, yy : dataset[list[int]], correction : bool) -> real :
     return chi2_contingency(yy.data, correction).pvalue
