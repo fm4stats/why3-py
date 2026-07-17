@@ -15,20 +15,21 @@ Akira Tanaka and Yusuke Kawamoto at National Institute of Advanced Industrial Sc
 
 Structure of the repository
 ---------------------------
+
 ```
 Why3-py/
-├ README.md                        this file
-├ statwhy-install.sh               Why3-py installation script
-├ statwhy-py                       Launcher for Why3-py
-├ env-why3                         Script to define environment variables
-├ plugins/                         Plugins
-│ └ python/                        Why3-py Python plugin
-│ └ ...
-├ examples/                        Examples
-│ └ statwhy-python/                Why3 examples
-│ └ ...
-├ doc-statwhy/                     Why3-py documents
-└ ...
+- README.md                        this file
+- statwhy-install.sh               Why3-py installation script
+- statwhy-py                       Launcher for Why3-py
+- env-why3                         Script to define environment variables
+- plugins/                         Plugins
+  - python/                        Why3-py Python plugin
+  - ...
+- examples/                        Examples
+  - statwhy-python/                Why3 examples
+  - ...
+- doc-statwhy/                     Why3-py documents
+- ...
 ```
 
 
@@ -76,6 +77,7 @@ After installation, we can execute the first Python example code to compute the 
 % ./env-why3 python3 examples/statwhy-python/example0_meta_pv.py
 eg_meta_pvs_fisher p-value : 0.115216
 ```
+
 We remark that `env-why3` must be executed at the Why3-py source directory.
 The first execution of the tool takes longer time, but subsequent runs can be faster as they reuse cached information.
 
@@ -84,6 +86,7 @@ Next, we can formally verify Python code via our [StatWhy](https://github.com/fm
 ```
 % ./statwhy-py examples/statwhy-python/example0_meta_pv.py
 ```
+
 where the `statwhy-py` command must also be executed at the Why3-py source directory.
 
 
