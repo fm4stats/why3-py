@@ -1,5 +1,6 @@
 from typing import NamedTuple
 from typing import Any
+from typing import Literal
 
 import numpy as np
 
@@ -22,7 +23,7 @@ from scikit_posthocs import posthoc_dscf # type: ignore
 
 from scipy.stats import combine_pvalues
 
-import statsmodels.stats.api as smstats
+import statsmodels.stats.api as smstats # type: ignore
 
 # cameleer/statwhy/lib/logicalFormula.mlw
 #   type scale =
@@ -182,7 +183,8 @@ Low = alternative("less")
 #   type null_dist = Norm | Expon | Logistic
 
 class null_dist :
-    def __init__(self, nd_string):
+    nd_string: Literal["norm", "expon", "logistic"]
+    def __init__(self, nd_string: Literal["norm", "expon", "logistic"]):
         self.nd_string = nd_string
 
 Norm = null_dist("norm")
@@ -244,7 +246,11 @@ def exec_alexandergovern(ps : list[distribution], ds : list[dataset[real]]) -> r
     return float(alexandergovern(*[d.data for d in ds]).pvalue)
 
 def exec_anderson(p : distribution, d : dataset[real], nd : null_dist) -> real:
-    return float(anderson(d.data, dist=nd.nd_string, method='interpolate').pvalue)
+    return float(anderson(
+                   d.data,
+                   dist=nd.nd_string, # type: ignore[arg-type]
+                   method="interpolate" # type: ignore[arg-type]
+                ).pvalue) # type: ignore[attr-defined]
 
 def exec_cramervonmises(p1 : distribution, p_null : distribution, d : dataset[real]) -> real:
     return float(cramervonmises(d.data, 'norm').pvalue)
