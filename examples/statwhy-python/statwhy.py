@@ -11,6 +11,9 @@ from scipy.stats import chisquare
 from scipy.stats import chi2_contingency
 from scipy.stats import bartlett
 from scipy.stats import levene
+from scipy.stats import alexandergovern
+from scipy.stats import anderson
+from scipy.stats import cramervonmises
 from scipy.stats import tukey_hsd
 from scipy.stats import dunnett
 from scipy.stats import f_oneway
@@ -175,6 +178,18 @@ Two = alternative("two-sided")
 Up = alternative("greater")
 Low = alternative("less")
 
+# cameleer/statwhy/lib//ex_anderson.mlw
+#   type null_dist = Norm | Expon | Logistic
+
+class null_dist :
+    def __init__(self, nd_string):
+        self.nd_string = nd_string
+
+Norm = null_dist("norm")
+Expon = null_dist("expon")
+Logistic = null_dist("logistic")
+
+
 # cameleer/statwhy/lib/combine_pvs.mlw :
 # type experiment = real
 # let function sit (exp: experiment) : formula =
@@ -203,10 +218,13 @@ def exec_ttest_ind_eq(d1 : distribution, d2 : distribution, y1 : dataset[real], 
 def exec_ttest_ind_neq(d1 : distribution, d2 : distribution, y1 : dataset[real], y2 : dataset[real], alt : alternative) -> real :
     return float(ttest_ind(y1.data, y2.data, equal_var=False, alternative=alt.alt_string).pvalue)
 
-def exec_binom_test(d : distribution, p0 : real, y : dataset[int], alt : alternative) -> real:
-    cnt = sum(y.data)
-    size = len(y.data)
-    return float(binomtest(k=cnt, n=size, p=p0, alternative=alt.alt_string).pvalue)
+def exec_chisquare_test(p : distribution, qs : list[real], d : dataset[int]) -> real :
+    n = sum(d.data)
+    expected = [float(p) * n for p in qs]
+    return float(chisquare(f_obs=d.data, f_exp=expected).pvalue)
+
+def exec_chi2_contingency(d1 : distribution, d2 : distribution, yy : dataset[list[int]], correction : bool) -> real :
+    return chi2_contingency(yy.data, correction).pvalue
 
 def exec_ftest(p1 : distribution, p2 : distribution, d1 : dataset[real], d2 : dataset[real], alt : alternative) -> real:
     return float(bartlett(d1.data, d2.data).pvalue)
@@ -216,6 +234,20 @@ def exec_bartlett(ps : list[distribution], ds : list[dataset[real]]) -> real:
 
 def exec_levene(ps : list[distribution], ds : list[dataset[real]]) -> real:
     return float(levene(*[d.data for d in ds]).pvalue)
+
+def exec_binom_test(d : distribution, p0 : real, y : dataset[int], alt : alternative) -> real:
+    cnt = sum(y.data)
+    size = len(y.data)
+    return float(binomtest(k=cnt, n=size, p=p0, alternative=alt.alt_string).pvalue)
+
+def exec_alexandergovern(ps : list[distribution], ds : list[dataset[real]]) -> real:
+    return float(alexandergovern(*[d.data for d in ds]).pvalue)
+
+def exec_anderson(p : distribution, d : dataset[real], nd : null_dist) -> real:
+    return float(anderson(d.data, dist=nd.nd_string, method='interpolate').pvalue)
+
+def exec_cramervonmises(p1 : distribution, p_null : distribution, d : dataset[real]) -> real:
+    return float(cramervonmises(d.data, 'norm').pvalue)
 
 
 
@@ -238,15 +270,6 @@ def exec_steel(dists : list[distribution], control_dist : distribution, ys : lis
 def exec_oneway_ANOVA(ds : list[distribution], ys : list[dataset[real]]) -> real :
     return float(f_oneway(*[y.data for y in ys]).pvalue)
 
-
-
-def exec_chisquare_test(p : distribution, qs : list[real], d : dataset[int]) -> real :
-    n = sum(d.data)
-    expected = [float(p) * n for p in qs]
-    return float(chisquare(f_obs=d.data, f_exp=expected).pvalue)
-
-def exec_chi2_contingency(d1 : distribution, d2 : distribution, yy : dataset[list[int]], correction : bool) -> real :
-    return chi2_contingency(yy.data, correction).pvalue
 
 def exec_combine_pvs_fisher(pvs : list[real], exps : list[experiment], disj_exp : formula, fml : formula) -> real :
     return combine_pvalues(pvs, method='fisher').pvalue
