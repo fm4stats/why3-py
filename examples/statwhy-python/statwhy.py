@@ -246,11 +246,7 @@ def exec_alexandergovern(ps : list[distribution], ds : list[dataset[real]]) -> r
     return float(alexandergovern(*[d.data for d in ds]).pvalue)
 
 def exec_anderson(p : distribution, d : dataset[real], nd : null_dist) -> real:
-    return float(anderson(
-                   d.data,
-                   dist=nd.nd_string, # type: ignore[arg-type]
-                   method="interpolate" # type: ignore[arg-type]
-                ).pvalue) # type: ignore[attr-defined]
+    return float(anderson(d.data,dist=nd.nd_string, method="interpolate").pvalue) # type: ignore
 
 def exec_cramervonmises(p1 : distribution, p_null : distribution, d : dataset[real]) -> real:
     return float(cramervonmises(d.data, 'norm').pvalue)
