@@ -28,7 +28,7 @@ Why3-py/
 - examples/                        Examples
   - statwhy-python/                Why3 examples
   - ...
-- doc-statwhy/                     user documentation of Why3-py
+- doc-why3-py/                     user documentation of Why3-py
 - ...
 ```
 
@@ -92,7 +92,7 @@ where the `statwhy-py` command must also be executed at the Why3-py source direc
 
 Then this launches the IDE of Why3 as follows:
 
-![](./doc-statwhy/figures/why3-py-start.png?raw=true "The Why3 IDE screen at start.")
+![](./doc-why3-py/figures/why3-py-start.png?raw=true "The Why3 IDE screen at start.")
 
 
 In the left pane, there is a single verification condition (VC) to be discharged: `main'vc` (the VC for `Example0_meta_pv`), which is equipped with a question mark.
@@ -100,7 +100,7 @@ Right-click on this goal and select 'StatWhy' (Not 'CVC5' or the other items) fr
 Then StatWhy 1.4 performs the formal verification of the goal.
 If the prover successfully verifies the goal, all descendants of the goal are folded and a green check mark will appear as follows:
 
-![](./doc-statwhy/figures/why3-py-verified.png?raw=true "The Why3 IDE screen: verification succeed.")
+![](./doc-why3-py/figures/why3-py-verified.png?raw=true "The Why3 IDE screen: verification succeed.")
 
 More examples can be found in the `examples/statwhy-python/` directory and are explained in the user documentation for Why3-py.
 
