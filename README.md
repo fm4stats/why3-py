@@ -28,7 +28,7 @@ Why3-py/
 - examples/                        Examples
   - statwhy-python/                Why3 examples
   - ...
-- doc-statwhy/                     Why3-py documents
+- doc-statwhy/                     user documentation of Why3-py
 - ...
 ```
 
@@ -55,7 +55,7 @@ Why3-py installs its dependencies (Python, mypy, etc.) into a dedicated director
   libcairo2-dev \
   libgtk-3-dev \
   libgtksourceview-3.0-dev
-% git clone https://github.com/fm4stats/why3-py.git
+% git clone --depth 1 --branch statwhy https://github.com/fm4stats/why3-py.git
 % cd why3-py
 % ./statwhy-install.sh $HOME/statwhy statwhy
 % eval $(opam env)
@@ -102,15 +102,27 @@ If the prover successfully verifies the goal, all descendants of the goal are fo
 
 ![](./doc-statwhy/figures/why3-py-verified.png?raw=true "The Why3 IDE screen: verification succeed.")
 
-More examples can be found in the `examples/statwhy-python/` directory.
+More examples can be found in the `examples/statwhy-python/` directory and are explained in the user documentation for Why3-py.
+
+
+Remark on the StatWhy tool
+--------------------------
+
+StatWhy is a software tool for automatically verifying the correctness of statistical hypothesis testing programs. StatWhy 1.2 (an old version without dealing with meta-analyses) was presented in our following paper:
+```
+StatWhy: Formal Verification Tool for Statistical Hypothesis Testing Programs.
+Yusuke Kawamoto, Kentaro Kobayashi, and Kohei Suenaga. [alphabetical authorship]
+Proc. of 37th International Conference on Computer Aided Verification (CAV 2025),
+Part II, Lecture Notes in Computer Science, Vol.15932, pp.216-230, July 2025.
+```
 
 
 Copyright
 ---------
 
-The modifications and additions specific to Why3-py are licensed under the GNU LGPL 2.1, the same license as Why3.
+The modifications and additions specific to Why3-py are licensed under the GNU LGPL 2.1, which is the same license used for Why3. The Python code for statistical analyses and meta-analyses in the examples directory is licensed under the MIT License, which is the same license used for StatWhy.
 
-See the accompanying LICENSE file for details.
+See the accompanying LICENSE files for details.
 
 The original README.md of Why3 is follows:
 ====
