@@ -1,4 +1,4 @@
-from statwhy import UnknownD, real, Two, Up, Low
+from statwhy import UnknownD, real, Two
 from statwhy import distribution
 from statwhy import ctable
 from statwhy import exec_Mantel_Haenszel
@@ -38,65 +38,6 @@ def ex_Mantel_Haenszel_Two(dist : distribution, ys : list[ctable]) -> real :
 
     return exec_Mantel_Haenszel(dist, ys, Two)
 
-# Executes Mantel-Haenszel's method to combine 3 experiments with upper-sided p-values.
-def ex_Mantel_Haenszel_Up(dist : distribution, ys : list[ctable]) -> real :
-    #@ requires \
-    #@   is_empty !st /\ \
-    #@   independently_sampled ys /\ (* The strata in ys are independent of each other. *) \
-    #@   length ys > 0 /\ all_matrix2x2 ys /\ \
-    #@   for_all (fun y -> \
-    #@            let d = { data = y; scale = Interval } in \
-    #@            sampled d dist) ys /\ \
-    #@   for_all (fun t -> \
-    #@            exists th : ctable.  (World !st interp) |= (odds_ratio th $= odds_ratio t)) \
-    #@           ys /\ (* The odds ratios for all strata are identical. *) \
-    #@   for_all (fun th -> \
-    #@            ((World !st interp) |= Not (Possible (odds_ratio th $< const_term 1.0)) /\ \
-    #@             (World !st interp) |= Possible (odds_ratio th $> const_term 1.0))) \
-    #@           ys
-
-    #@ ensures \
-    #@   let pv = result in \
-    #@   pvalue pv /\ \
-    #@   let th = \
-    #@     match ys with \
-    #@     | Cons hd _ -> hd \
-    #@     | Nil -> Nil \
-    #@     end in \
-    #@   Eq pv = compose_pvs (odds_ratio th $> const_term 1.0) !st && \
-    #@   (World !st interp) |= StatB (Eq pv) (odds_ratio th $> const_term 1.0)
-
-    return exec_Mantel_Haenszel(dist, ys, Up)
-
-# Executes Mantel-Haenszel's method to combine 3 experiments with lower-sided p-values.
-def ex_Mantel_Haenszel_Low(dist : distribution, ys : list[ctable]) -> real :
-    #@ requires \
-    #@   is_empty !st /\ \
-    #@   independently_sampled ys /\ (* The strata in ys are independent of each other. *) \
-    #@   length ys > 0 /\ all_matrix2x2 ys /\ \
-    #@   for_all (fun y -> \
-    #@            let d = { data = y; scale = Interval } in \
-    #@            sampled d dist) ys /\ \
-    #@   for_all (fun t -> \
-    #@            exists th : ctable.  (World !st interp) |= (odds_ratio th $= odds_ratio t)) \
-    #@           ys /\ (* The odds ratios for all strata are identical. *) \
-    #@   for_all (fun th -> \
-    #@            ((World !st interp) |= Possible (odds_ratio th $< const_term 1.0) /\ \
-    #@             (World !st interp) |= Not (Possible (odds_ratio th $> const_term 1.0)))) \
-    #@           ys
-
-    #@ ensures \
-    #@   let pv = result in \
-    #@   pvalue pv /\ \
-    #@   let th = \
-    #@     match ys with \
-    #@     | Cons hd _ -> hd \
-    #@     | Nil -> Nil \
-    #@     end in \
-    #@   Eq pv = compose_pvs (odds_ratio th $< const_term 1.0) !st && \
-    #@   (World !st interp) |= StatB (Eq pv) (odds_ratio th $< const_term 1.0)
-
-    return exec_Mantel_Haenszel(dist, ys, Low)
 
 #@ execution
 
@@ -123,10 +64,3 @@ ctables = [[[18.0, 1.0], [12.0, 10.0]],
 
 res = ex_Mantel_Haenszel_Two(UnknownD("unknown"), ctables)
 print("ex_Mantel_Haenszel_Two p-value : %f" % res)
-
-res = ex_Mantel_Haenszel_Up(UnknownD("unknown"), ctables)
-print("ex_Mantel_Haenszel_Up p-value : %f" % res)
-
-res = ex_Mantel_Haenszel_Low(UnknownD("unknown"), ctables)
-print("ex_Mantel_Haenszel_Low p-value : %f" % res)
-
