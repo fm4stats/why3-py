@@ -40,5 +40,5 @@ data = dataset(data=[
 
 print("p-value: %f" % ex_anderson1(data))
 
-# % ./env-why3 python3 ./examples/statwhy-python/hypothesis_testing/ex_anderson.py 
+# % ./env-why3 python3 ./examples/statwhy-python/hypothesis_testing/ex_anderson.py
 # p-value: 0.010000

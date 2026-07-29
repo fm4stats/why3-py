@@ -38,5 +38,5 @@ d1 = dataset(data=[
 
 print("p-value of ex_ttest_1samp(d1): %f" % ex_ttest_1samp(d1))
 
-# % ./env-why3 python3 ./examples/statwhy-python/hypothesis_testing/simple_ttest.py 
+# % ./env-why3 python3 ./examples/statwhy-python/hypothesis_testing/simple_ttest.py
 # p-value of ex_ttest_1samp(d1): 0.160664

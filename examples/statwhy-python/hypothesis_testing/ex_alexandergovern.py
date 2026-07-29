@@ -28,7 +28,7 @@ def ex_alexandergovern4(d1, d2, d3, d4) -> real:
     #@   ((World !st interp) |= Possible (t_m1 $< t_m3)) /\ \
     #@   ((World !st interp) |= Possible (t_m1 $> t_m3)) /\ \
     #@   ((World !st interp) |= Possible (t_m1 $< t_m4)) /\ \
-    #@   ((World !st interp) |= Possible (t_m1 $> t_m4)) /\ \             
+    #@   ((World !st interp) |= Possible (t_m1 $> t_m4)) /\ \
     #@   ((World !st interp) |= Possible (t_m2 $< t_m3)) /\ \
     #@   ((World !st interp) |= Possible (t_m2 $> t_m3)) /\ \
     #@   ((World !st interp) |= Possible (t_m2 $< t_m4)) /\ \
@@ -106,5 +106,5 @@ d4 = dataset(data=[
 
 print("p-value: %f" % ex_alexandergovern4(d1, d2, d3, d4))
 
-# % ./env-why3 python3 ./examples/statwhy-python/hypothesis_testing/ex_alexandergovern.py 
+# % ./env-why3 python3 ./examples/statwhy-python/hypothesis_testing/ex_alexandergovern.py
 # p-value: 0.629888

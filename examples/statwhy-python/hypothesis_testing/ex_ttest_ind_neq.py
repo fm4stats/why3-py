@@ -60,5 +60,5 @@ d2 = dataset(data=[
 
 print("p-value of ex_ttest_ind_neq(d1, d2): %f" % ex_ttest_ind_neq(d1, d2))
 
-# % ./env-why3 python3 ./examples/statwhy-python/hypothesis_testing/ex_ttest_ind_neq.py 
+# % ./env-why3 python3 ./examples/statwhy-python/hypothesis_testing/ex_ttest_ind_neq.py
 # p-value of ex_ttest_ind_neq(d1, d2): 0.472758
