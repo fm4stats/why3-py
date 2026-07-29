@@ -3,14 +3,14 @@
 #
 # Usage:
 #   build: docker build -t mystatwhy .
-#   run: docker run -it mystatwhy
+#   run: docker run -p 6080:6080 -it mystatwhy
 #   desktop URL: http://localhost:6080/vnc.html
 #   export image: docker save | gzip -c > why3-py-docker-image.tar.gz
 #   import image: gzip -dc why3-py-docker-image.tar.gz | docker load
 #
 # Minimum usage to use pre-build image:
 #   % gzip -dc why3-py-docker-image.tar.gz | docker load
-#   % docker run -it mystatwhy
+#   % docker run -p 6080:6080 -it mystatwhy
 #   Access the desktop URL in a browser: http://localhost:6080/vnc.html
 #   It should show noVNC page which can connect to the desktop.
 #
