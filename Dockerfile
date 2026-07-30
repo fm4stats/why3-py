@@ -49,6 +49,7 @@ RUN echo "deb-src ${mirror} trixie main" > /etc/apt/sources.list.d/deb-src.list 
       libcairo2-dev \
       libgtk-3-dev \
       libgtksourceview-3.0-dev \
+      python3-jinja2 \
   && rm -rf /var/lib/apt/lists/*
 
 RUN useradd -m -s /bin/bash guest
@@ -59,8 +60,12 @@ CMD ["/start-desktop-in-docker.sh"]
 
 EXPOSE 6080 5901
 
-COPY . /home/guest/why3
-RUN chown -R guest:guest /home/guest/why3
+COPY . /home/guest/why3-py
+RUN chown -R guest:guest /home/guest/why3-py
+
+RUN mkdir -p /home/guest/Desktop
+COPY command-lines-for-artifact-evaluation.txt /home/guest/Desktop
+RUN chown -R guest:guest /home/guest/Desktop
 
 USER guest
 WORKDIR /home/guest
@@ -73,6 +78,6 @@ RUN mkdir -p /home/guest/.config/tigervnc && \
 # modify ~/.profile.
 RUN opam init --bare --disable-sandboxing --shell-setup
 
-RUN cd /home/guest/why3 && ./statwhy-install.sh /home/guest/statwhy statwhy
+RUN cd /home/guest/why3-py && ./statwhy-install.sh /home/guest/statwhy statwhy
 
 USER root
