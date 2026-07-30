@@ -50,6 +50,7 @@ RUN echo "deb-src ${mirror} trixie main" > /etc/apt/sources.list.d/deb-src.list 
       libgtk-3-dev \
       libgtksourceview-3.0-dev \
       python3-jinja2 \
+      atril \
   && rm -rf /var/lib/apt/lists/*
 
 RUN useradd -m -s /bin/bash guest
@@ -79,5 +80,7 @@ RUN mkdir -p /home/guest/.config/tigervnc && \
 RUN opam init --bare --disable-sandboxing --shell-setup
 
 RUN cd /home/guest/why3-py && ./statwhy-install.sh /home/guest/statwhy statwhy
+
+RUN echo 'set mouse=' > /home/guest/.vimrc
 
 USER root
