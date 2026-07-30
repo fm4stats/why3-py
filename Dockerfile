@@ -65,7 +65,7 @@ COPY . /home/guest/why3-py
 RUN chown -R guest:guest /home/guest/why3-py
 
 RUN mkdir -p /home/guest/Desktop
-COPY command-lines-for-artifact-evaluation.txt /home/guest/Desktop
+COPY doc-why3-py/command-lines-for-artifact-evaluation.txt /home/guest/Desktop
 RUN chown -R guest:guest /home/guest/Desktop
 
 USER guest
