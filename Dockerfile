@@ -5,7 +5,7 @@
 #   build: docker build -t mystatwhy .
 #   run: docker run -p 6080:6080 -it mystatwhy
 #   desktop URL: http://localhost:6080/vnc.html
-#   export image: docker save | gzip -c > why3-py-docker-image.tar.gz
+#   export image: docker save mystatwhy | gzip -c > why3-py-docker-image.tar.gz
 #   import image: gzip -dc why3-py-docker-image.tar.gz | docker load
 #
 # Minimum usage to use pre-build image:
