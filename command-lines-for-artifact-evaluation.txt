@@ -1,0 +1,111 @@
+Command lines for the artifact evaluation
+
+We present the command lines for artifact evaluation written in the appendix of our paper as follows.
+
+
+0. How to run the first example
+-------------------------------
+Command lines:
+ cd why3-py/
+ ./env-why3 python3 examples/statwhy-python/example0_meta_pv.py
+
+Output:
+ eg_meta_pvs_fisher p-value : 0.115216
+
+
+Command line:
+ ./statwhy-py examples/statwhy-python/example0_meta_pv.py
+
+Outcome:
+The IDE is launched. Please refer to Appendix A.2 of our paper.
+
+
+1. Functional outcome F1
+------------------------
+Command line (at the directory why3-py):
+ ./statwhy-py examples/statwhy-python/example0_meta_pv.py
+
+Outcome:
+The IDE is launched and the verification will be successful after right-clicking the goal main'vc and selecting 'StatWhy'.
+Please refer to Appendices A.2 and A.3 of our paper.
+
+
+2. Functional outcome F2
+------------------------
+Command line (at the directory why3-py):
+ ./statwhy-py examples/statwhy-python/FAIL_meta_pv.py
+
+Outcome:
+The IDE is launched and the verification will be FAILED after right-clicking the goal main'vc and selecting 'StatWhy'.
+Note that this Python code has an incorrect annotation where several requirements for Fisher's method are missing and can be found by selecting '2 [precondition]' and the task tab and reading the goal that the tool could not prove.
+Please refer to Section 3 and Appendix A.3 of our paper.
+
+
+3. Functional outcome F3
+------------------------
+Command line (at the directory why3-py):
+ ./env-why3 python3 examples/statwhy-python/example0_meta_pv.py
+
+Output of the p-value:
+ eg_meta_pvs_fisher p-value : 0.115216
+
+
+4. Functional outcome F4
+------------------------
+Command line (at the directory why3-py):
+ python3 examples/statwhy-python/bench.py tukey_hsd 3
+
+Output of the execution time:
+ tukey_hsd,3,StatWhy,25.946896076202393
+
+
+5. More examples (optional)
+---------------------------
+5.1 t-test
+$ ./env-why3 python3 examples/statwhy-python/hypothesis_testing/simple_ttest.py
+p-value of ex_ttest_1samp(d1): 0.160664
+
+$ ./statwhy-py examples/statwhy-python/hypothesis_testing/simple_ttest.py 
+
+
+5.2 Multiple comparison tests
+[Bonferroni correction]
+$ ./env-why3 python3 examples/statwhy-python/hypothesis_testing/example4.py
+p-value : 0.091818
+
+$ ./statwhy-py examples/statwhy-python/hypothesis_testing/example4.py
+
+[P-value hacking]
+$ ./statwhy-py examples/statwhy-python/hypothesis_testing/FAIL_example5.py
+
+[Dunnett's method for multiple comparison]
+$ ./env-why3 python3 examples/statwhy-python/hypothesis_testing/ex_dunnett.py
+[0.9136453141881619, 0.9904359229281207, 0.6647601340612583]
+
+$ ./statwhy-py examples/statwhy-python/hypothesis_testing/ex_dunnett.py
+
+
+5.3 Meta-analyses
+[Fisher’s method]
+$ ./env-why3 python3 examples/statwhy-python/example0_meta_pv.py
+eg_meta_pvs_fisher p-value : 0.115216
+
+$ ./statwhy-py examples/statwhy-python/example0_meta_pv.py
+
+[Stouffer’s method]
+$ ./env-why3 python3 examples/statwhy-python/meta/ex_combine_pvs_stouffer.py
+ex_combine_pvs_stouffer_Two p-value : 0.022141
+ex_combine_pvs_stouffer_Up p-value : 0.063185
+ex_combine_pvs_stouffer_Low p-value : 0.063185
+ex_combine_pvs_weighted_stouffer_Two p-value : 0.036201
+ex_combine_pvs_weighted_stouffer_Up p-value : 0.091048
+ex_combine_pvs_weighted_stouffer_Low p-value : 0.091048
+
+$ ./statwhy-py examples/statwhy-python/meta/ex_combine_pvs_stouffer.py 
+
+[Mantel-Haenszel’s method]
+$ ./env-why3 python3 examples/statwhy-python/meta/ex_combine_pvs_MantelHaenszel.py 
+ex_Mantel_Haenszel_Two p-value : 0.344964
+
+$ ./statwhy-py examples/statwhy-python/meta/ex_combine_pvs_MantelHaenszel.py 
+
